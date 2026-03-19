@@ -39,7 +39,29 @@ app.get("/orders", (req, res) => {
     res.json(result);
   });
 });
-//test user
+// lấy order theo id
+app.get("/orders/:id", (req, res) => {
+  const id = req.params.id;
+
+  db.query(
+    "SELECT * FROM orders WHERE id = ?",
+    [id],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json(err);
+      }
+
+      if (result.length === 0) {
+        return res.json(null);
+      }
+
+      res.json(result[0]);
+    }
+  );
+});
+
+//lay all user
 app.get("/users", (req, res) => {
   db.query("SELECT * FROM users", (err, result) => {
     if (err) {
@@ -49,72 +71,27 @@ app.get("/users", (req, res) => {
     res.json(result);
   });
 });
-// // lấy tất cả orders
-// app.get("/orders", (req, res) => {
-//   db.query("SELECT * FROM orders", (err, result) => {
-//     if (err) {
-//       console.log(err);
-//       return res.status(500).json(err);
-//     }
-//     res.json(result);
-//   });
-// });
 
-// // lấy order theo id
-// app.get("/orders/:id", (req, res) => {
-//   const id = req.params.id;
+//lay tung users
+app.get("/users/:username", (req, res) => {
+  const username = req.params.username;
+  db.query(
+    "SELECT * FROM users WHERE username = ?",
+    [username],
+    (err, result) => {
+      if (err) {
+        console.log("DB ERROR:", err);
+        return res.status(500).json({ error: err.message });
+      }
 
-//   db.query(
-//     "SELECT * FROM orders WHERE id = ?",
-//     [id],
-//     (err, result) => {
-//       if (err) {
-//         console.log(err);
-//         return res.status(500).json(err);
-//       }
+      if (result.length === 0) {
+        return res.json(null);
+      }
 
-//       if (result.length === 0) {
-//         return res.json(null);
-//       }
-
-//       res.json(result[0]);
-//     }
-//   );
-// });
-
-// // lấy tất cả user
-// app.get("/users", (req, res) => {
-//   db.query("SELECT * FROM users", (err, result) => {
-//     if (err) {
-//       console.log(err);
-//       return res.status(500).json(err);
-//     }
-//     res.json(result);
-//   });
-// });
-
-// // login user
-// app.get("/users/:username/:password", (req, res) => {
-//   const { username, password } = req.params;
-
-//   db.query(
-//     "SELECT * FROM users WHERE username = ? AND password = ?",
-//     [username, password],
-//     (err, result) => {
-//       if (err) {
-//         console.log(err);
-//         return res.status(500).json(err);
-//       }
-
-//       if (result.length === 0) {
-//         return res.json(null);
-//       }
-
-//       res.json(result[0]);
-//     }
-//   );
-// });
-
+      res.json(result[0]);
+    }
+  );
+});
 // PORT Railway
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
