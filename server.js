@@ -36,8 +36,8 @@ app.get("/orders", (req, res) => {
   });
 });
 //test user
-app.get("/user", (req, res) => {
-  db.query("SELECT * FROM user", (err, result) => {
+app.get("/users", (req, res) => {
+  db.query("SELECT * FROM users", (err, result) => {
     if (err) {
       console.log("DB ERROR:", err);
       return res.status(500).json({ error: err.message });
