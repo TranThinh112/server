@@ -30,11 +30,13 @@ app.get("/", (req, res) => {
 });
 // lấy tất cả orders test
 app.get("/orders", (req, res) => {
-  db.query("SELECT id, station FROM orders", (err, result) => {
+  db.query("SELECT * FROM orders", (err, result) => {
     if (err) {
-      console.log(err);
-      return res.status(500).json(err);
-    }
+      console.log("DB ERROR:", err); // 👈 QUAN TRỌNG
+      return res.status(500).json({
+        error: err.message
+    });
+  }
     res.json(result);
   });
 });
