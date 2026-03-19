@@ -73,38 +73,38 @@ app.get("/orders", (req, res) => {
 //   );
 // });
 
-// lấy tất cả user
-app.get("/users", (req, res) => {
-  db.query("SELECT * FROM users", (err, result) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).json(err);
-    }
-    res.json(result);
-  });
-});
+// // lấy tất cả user
+// app.get("/users", (req, res) => {
+//   db.query("SELECT * FROM users", (err, result) => {
+//     if (err) {
+//       console.log(err);
+//       return res.status(500).json(err);
+//     }
+//     res.json(result);
+//   });
+// });
 
-// login user
-app.get("/users/:username/:password", (req, res) => {
-  const { username, password } = req.params;
+// // login user
+// app.get("/users/:username/:password", (req, res) => {
+//   const { username, password } = req.params;
 
-  db.query(
-    "SELECT * FROM users WHERE username = ? AND password = ?",
-    [username, password],
-    (err, result) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json(err);
-      }
+//   db.query(
+//     "SELECT * FROM users WHERE username = ? AND password = ?",
+//     [username, password],
+//     (err, result) => {
+//       if (err) {
+//         console.log(err);
+//         return res.status(500).json(err);
+//       }
 
-      if (result.length === 0) {
-        return res.json(null);
-      }
+//       if (result.length === 0) {
+//         return res.json(null);
+//       }
 
-      res.json(result[0]);
-    }
-  );
-});
+//       res.json(result[0]);
+//     }
+//   );
+// });
 
 // PORT Railway
 const PORT = process.env.PORT || 3000;
