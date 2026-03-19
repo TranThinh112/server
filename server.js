@@ -24,6 +24,10 @@ const db = mysql.createPool({
 //     console.log("✅ Connected to MySQL");
 //   }
 // });
+//api de nguyen
+app.get("/", (req, res) => {
+  res.send("API is running 🚀");
+});
 
 // test API
 app.get("/orders", (req, res) => {
