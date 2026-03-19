@@ -28,10 +28,9 @@ db.connect((err) => {
 app.get("/", (req, res) => {
   res.send("API running 🚀");
 });
-
-// lấy tất cả orders
+// lấy tất cả orders test
 app.get("/orders", (req, res) => {
-  db.query("SELECT * FROM orders", (err, result) => {
+  db.query("SELECT id, station FROM orders", (err, result) => {
     if (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -40,27 +39,39 @@ app.get("/orders", (req, res) => {
   });
 });
 
-// lấy order theo id
-app.get("/orders/:id", (req, res) => {
-  const id = req.params.id;
 
-  db.query(
-    "SELECT * FROM orders WHERE id = ?",
-    [id],
-    (err, result) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json(err);
-      }
+// // lấy tất cả orders
+// app.get("/orders", (req, res) => {
+//   db.query("SELECT * FROM orders", (err, result) => {
+//     if (err) {
+//       console.log(err);
+//       return res.status(500).json(err);
+//     }
+//     res.json(result);
+//   });
+// });
 
-      if (result.length === 0) {
-        return res.json(null);
-      }
+// // lấy order theo id
+// app.get("/orders/:id", (req, res) => {
+//   const id = req.params.id;
 
-      res.json(result[0]);
-    }
-  );
-});
+//   db.query(
+//     "SELECT * FROM orders WHERE id = ?",
+//     [id],
+//     (err, result) => {
+//       if (err) {
+//         console.log(err);
+//         return res.status(500).json(err);
+//       }
+
+//       if (result.length === 0) {
+//         return res.json(null);
+//       }
+
+//       res.json(result[0]);
+//     }
+//   );
+// });
 
 // lấy tất cả user
 app.get("/users", (req, res) => {
