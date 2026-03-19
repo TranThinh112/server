@@ -73,8 +73,8 @@ app.get("/users", (req, res) => {
 });
 
 //lay tung users
-app.get("/users/:username", (req, res) => {
-  const { username, password } = req.body;
+app.get("/users/:username/:password", (req, res) => {
+  const { username, password } = req.params;
 
   db.query(
     "SELECT * FROM users WHERE username = ? AND password = ?",
