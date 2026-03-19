@@ -17,13 +17,13 @@ const db = mysql.createPool({
   connectionLimit: 10,
 });
 // 🔥 QUAN TRỌNG: connect + không crash
-db.connect((err) => {
-  if (err) {
-    console.log("❌ DB connection error:", err);
-  } else {
-    console.log("✅ Connected to MySQL");
-  }
-});
+// db.connect((err) => {
+//   if (err) {
+//     console.log("❌ DB connection error:", err);
+//   } else {
+//     console.log("✅ Connected to MySQL");
+//   }
+// });
 
 // test API
 app.get("/orders", (req, res) => {
