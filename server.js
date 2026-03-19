@@ -7,12 +7,15 @@ app.use(cors());
 app.use(express.json());
 
 // ✅ kết nối database
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
-  port: process.env.MYSQLPORT
+  port: process.env.MYSQLPORT,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
 // 🔥 QUAN TRỌNG: connect + không crash
@@ -32,15 +35,12 @@ app.get("/", (req, res) => {
 app.get("/orders", (req, res) => {
   db.query("SELECT * FROM orders", (err, result) => {
     if (err) {
-      console.log("DB ERROR:", err); // 👈 QUAN TRỌNG
-      return res.status(500).json({
-        error: err.message
-    });
-  }
+      console.log("DB ERROR:", err);
+      return res.status(500).json({ error: err.message });
+    }
     res.json(result);
   });
 });
-
 
 // // lấy tất cả orders
 // app.get("/orders", (req, res) => {
