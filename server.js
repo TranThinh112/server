@@ -15,9 +15,7 @@ const db = mysql.createPool({
   port: process.env.MYSQLPORT,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
 });
-
 // 🔥 QUAN TRỌNG: connect + không crash
 db.connect((err) => {
   if (err) {
@@ -28,10 +26,6 @@ db.connect((err) => {
 });
 
 // test API
-app.get("/", (req, res) => {
-  res.send("API running 🚀");
-});
-// lấy tất cả orders test
 app.get("/orders", (req, res) => {
   db.query("SELECT * FROM orders", (err, result) => {
     if (err) {
@@ -41,7 +35,6 @@ app.get("/orders", (req, res) => {
     res.json(result);
   });
 });
-
 // // lấy tất cả orders
 // app.get("/orders", (req, res) => {
 //   db.query("SELECT * FROM orders", (err, result) => {
