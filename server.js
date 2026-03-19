@@ -74,15 +74,13 @@ app.get("/users", (req, res) => {
 
 //lay tung users
 app.get("/users/:username", (req, res) => {
-  const username = req.params.username;
+  const { username, password } = req.body;
+
   db.query(
-    "SELECT * FROM users WHERE username = ?",
-    [username],
+    "SELECT * FROM users WHERE username = ? AND password = ?",
+    [username, password],
     (err, result) => {
-      if (err) {
-        console.log("DB ERROR:", err);
-        return res.status(500).json({ error: err.message });
-      }
+      if (err) return res.status(500).json(err);
 
       if (result.length === 0) {
         return res.json(null);
