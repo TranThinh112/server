@@ -72,50 +72,7 @@ app.get("/users", (req, res) => {
   });
 });
 
-// lay user theo username (mà không cần password)
-app.get("/users/lookup/:username", (req, res) => {
-  const username = req.params.username;
-
-  db.query(
-    "SELECT * FROM users WHERE username = ?",
-    [username],
-    (err, result) => {
-      if (err) {
-        console.log("DB ERROR:", err);
-        return res.status(500).json({ error: err.message });
-      }
-
-      if (result.length === 0) {
-        return res.json(null);
-      }
-      res.json(result[0]);
-    }
-  );
-});
-
-// lay user theo username (fallback cho client dễ dùng)
-app.get("/users/:username", (req, res) => {
-  const username = req.params.username;
-
-  db.query(
-    "SELECT * FROM users WHERE username = ?",
-    [username],
-    (err, result) => {
-      if (err) {
-        console.log("DB ERROR:", err);
-        return res.status(500).json({ error: err.message });
-      }
-
-      if (result.length === 0) {
-        return res.status(404).json({ error: "User not found" });
-      }
-
-      res.json(result[0]);
-    }
-  );
-});
-
-//lay tung users theo username + password
+//lay tung users
 app.get("/users/:username/:password", (req, res) => {
   const { username, password } = req.params;
 
@@ -133,7 +90,6 @@ app.get("/users/:username/:password", (req, res) => {
     }
   );
 });
-
 // cập nhật mật khẩu user theo username
 app.put("/users/:username", (req, res) => {
   const username = req.params.username;
@@ -172,7 +128,6 @@ app.put("/users/:username", (req, res) => {
     }
   );
 });
-
 // PORT Railway
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
