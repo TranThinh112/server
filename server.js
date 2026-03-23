@@ -63,6 +63,27 @@ app.get("/users", (req, res) => {
     res.json(result);
   });
 });
+//lay all user chỉ tk
+app.get("/users/:username", (req, res) => {
+  const username = req.params.username;
+
+  db.query(
+    "SELECT * FROM users WHERE username = ?",
+    [username],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json(err);
+      }
+
+      if (result.length === 0) {
+        return res.json(null);
+      }
+
+      res.json(result[0]);
+    }
+  );
+});
 
 
 //lay tung users
