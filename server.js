@@ -64,16 +64,6 @@ app.get("/users", (req, res) => {
   });
 });
 
-//lay all TO
-app.get("/tranfers_orders", (req, res) => {
-  db.query("SELECT * FROM tranfers_orders", (err, result) => {
-    if (err) {
-      console.log("DB ERROR:", err);
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(result);
-  });
-});
 
 //lay tung users
 app.get("/users/:username/:password", (req, res) => {
@@ -129,6 +119,16 @@ app.put("/users/:username", (req, res) => {
       );
     }
   );
+});
+//lay all TO
+app.get("/TO_orders", (req, res) => {
+  db.query("SELECT * FROM TO_orders", (err, result) => {
+    if (err) {
+      console.log("DB ERROR:", err);
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(result);
+  });
 });
 // PORT Railway
 const PORT = process.env.PORT || 3000;
