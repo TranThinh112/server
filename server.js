@@ -127,6 +127,75 @@ app.put("/users/:username", (req, res) => {
     }
   );
 });
+//gửi dữ liệu lên server để tạo TO mới
+app.post("/TO_orders", (req, res) => {
+  const {
+    maTO,
+    danhSachGoiHang,
+    diaDiemGiaoHang,
+    trangThai,
+    packer,
+    totalWeight,
+    ngayTao,
+    completeTime
+  } = req.body;
+
+  db.query(
+    `INSERT INTO TO_orders 
+    (maTO, danhSachGoiHang, diaDiemGiaoHang, trangThai, packer, totalWeight, ngayTao, completeTime)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      maTO,
+      JSON.stringify(danhSachGoiHang), // 🔥 convert list → string
+      diaDiemGiaoHang,
+      trangThai,
+      packer,
+      totalWeight,
+      ngayTao,
+      completeTime
+    ],
+    (err, result) => {
+      if (err) {
+        console.log("DB ERROR:", err);
+        return res.status(500).json(err);
+      }
+      res.json({ success: true });
+    }
+  );
+});
+//api upload TO mới
+app.put("/TO_orders/:maTO", (req, res) => {
+  const maTO = req.params.maTO;
+  const {
+    danhSachGoiHang,
+    diaDiemGiaoHang,
+    trangThai,
+    totalWeight,
+    completeTime
+  } = req.body;
+
+  db.query(
+    `UPDATE TO_orders SET 
+      danhSachGoiHang=?,
+      diaDiemGiaoHang=?,
+      trangThai=?,
+      totalWeight=?,
+      completeTime=?
+     WHERE maTO=?`,
+    [
+      JSON.stringify(danhSachGoiHang),
+      diaDiemGiaoHang,
+      trangThai,
+      totalWeight,
+      completeTime,
+      maTO
+    ],
+    (err) => {
+      if (err) return res.status(500).json(err);
+      res.json({ success: true });
+    }
+  );
+});
 //lay all TO
 app.get("/TO_orders", (req, res) => {
   db.query("SELECT * FROM TO_orders", (err, result) => {
