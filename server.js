@@ -65,32 +65,31 @@ app.get("/users", (req, res) => {
 });
 
 //tìm user theo username, có thể kèm password để login
-app.get("/users/:username/:password?", (req, res) => {
+// 🔍 tìm user
+app.get("/users/:username", handleUser);
+
+// 🔐 login
+app.get("/users/:username/:password", handleUser);
+
+// 👉 dùng chung logic
+function handleUser(req, res) {
   const username = req.params.username;
-  const password = req.params.password; // 👈 optional
+  const password = req.params.password;
 
   let sql = "SELECT * FROM users WHERE username = ?";
   let params = [username];
 
-  // 🔐 Nếu có password → login
   if (password) {
     sql += " AND password = ?";
     params.push(password);
   }
 
   db.query(sql, params, (err, result) => {
-    if (err) {
-      console.log("DB ERROR:", err);
-      return res.status(500).json(err);
-    }
-
-    if (result.length === 0) {
-      return res.json(null);
-    }
-
-    res.json(result[0]);
+    if (err) return res.status(500).json(err);
+    res.json(result[0] || null);
   });
-});
+}
+
 // cập nhật mật khẩu user theo username
 app.put("/users/:username", (req, res) => {
   const username = req.params.username;
