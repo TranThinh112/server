@@ -21,7 +21,7 @@ app.get("/", (req, res) => {
   res.send("API is running 🚀");
 });
 
-// test all orders
+// test API
 app.get("/orders", (req, res) => {
   db.query("SELECT * FROM orders", (err, result) => {
     if (err) {
@@ -31,10 +31,10 @@ app.get("/orders", (req, res) => {
     res.json(result);
   });
 });
-
 // lấy order theo id
 app.get("/orders/:id", (req, res) => {
   const id = req.params.id;
+
   db.query(
     "SELECT * FROM orders WHERE id = ?",
     [id],
@@ -53,21 +53,9 @@ app.get("/orders/:id", (req, res) => {
   );
 });
 
-//lay all user chỉ tk
+//lay all user
 app.get("/users", (req, res) => {
   db.query("SELECT * FROM users", (err, result) => {
-    if (err) {
-      console.log("DB ERROR:", err);
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(result);
-  });
-});
-
-//lay all user tk và mk 
-app.get("/users", (req, res) => {
-  const { username, password } = req.query();
-  db.query("SELECT * FROM users where username =? and password =?", [username, password], (err, result) => {
     if (err) {
       console.log("DB ERROR:", err);
       return res.status(500).json({ error: err.message });
