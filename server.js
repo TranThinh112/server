@@ -55,6 +55,19 @@ app.get("/orders/:id", (req, res) => {
 
 //lay all user
  // 🔐 Nếu có password → LOGIN
+app.get("/users", (req, res) => {
+  const { username, password } = req.query;
+
+  let sql = "SELECT * FROM users WHERE 1=1";
+  let params = [];
+
+  // 🔍 Tìm theo username
+  if (username) {
+    sql += " AND username = ?";
+    params.push(username);
+  }
+
+  // 🔐 Nếu có password → LOGIN
   if (password) {
     sql += " AND password = ?";
     params.push(password);
@@ -72,6 +85,8 @@ app.get("/orders/:id", (req, res) => {
 
     res.json(result[0]); // ✅ trả về user
   });
+});
+
 
 // cập nhật mật khẩu user theo username
 app.put("/users/:username", (req, res) => {
