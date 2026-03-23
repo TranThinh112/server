@@ -16,14 +16,6 @@ const db = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
 });
-// 🔥 QUAN TRỌNG: connect + không crash
-// db.connect((err) => {
-//   if (err) {
-//     console.log("❌ DB connection error:", err);
-//   } else {
-//     console.log("✅ Connected to MySQL");
-//   }
-// });
 //api de nguyen
 app.get("/", (req, res) => {
   res.send("API is running 🚀");
@@ -72,6 +64,17 @@ app.get("/users", (req, res) => {
   });
 });
 
+//lay all TO
+app.get("/tranfers_orders", (req, res) => {
+  db.query("SELECT * FROM tranfers_orders", (err, result) => {
+    if (err) {
+      console.log("DB ERROR:", err);
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(result);
+  });
+});
+
 //lay tung users
 app.get("/users/:username/:password", (req, res) => {
   const { username, password } = req.params;
@@ -98,7 +101,6 @@ app.put("/users/:username", (req, res) => {
   if (!password || password.trim().length === 0) {
     return res.status(400).json({ error: "Password is required" });
   }
-
   db.query(
     "UPDATE users SET password = ? WHERE username = ?",
     [password, username],
