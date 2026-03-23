@@ -54,56 +54,25 @@ app.get("/orders/:id", (req, res) => {
 });
 
 //lay all user
-app.get("/users", (req, res) => {
-  db.query("SELECT * FROM users", (err, result) => {
+ // 🔐 Nếu có password → LOGIN
+  if (password) {
+    sql += " AND password = ?";
+    params.push(password);
+  }
+
+  db.query(sql, params, (err, result) => {
     if (err) {
       console.log("DB ERROR:", err);
       return res.status(500).json({ error: err.message });
     }
-    res.json(result);
+
+    if (result.length === 0) {
+      return res.json(null); // ❌ không tìm thấy / sai login
+    }
+
+    res.json(result[0]); // ✅ trả về user
   });
-});
-//lay all user chỉ tk
-app.get("/users/:username", (req, res) => {
-  const username = req.params.username;
 
-  db.query(
-    "SELECT * FROM users WHERE username = ?",
-    [username],
-    (err, result) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json(err);
-      }
-
-      if (result.length === 0) {
-        return res.json(null);
-      }
-
-      res.json(result[0]);
-    }
-  );
-});
-
-
-//lay tung users
-app.get("/users/:username/:password", (req, res) => {
-  const { username, password } = req.params;
-
-  db.query(
-    "SELECT * FROM users WHERE username = ? AND password = ?",
-    [username, password],
-    (err, result) => {
-      if (err) return res.status(500).json(err);
-
-      if (result.length === 0) {
-        return res.json(null);
-      }
-
-      res.json(result[0]);
-    }
-  );
-});
 // cập nhật mật khẩu user theo username
 app.put("/users/:username", (req, res) => {
   const username = req.params.username;
