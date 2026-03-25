@@ -52,17 +52,6 @@ app.get("/orders/:id", (req, res) => {
     }
   );
 });
-// lấy order theo id cho file quản lý
-app.get("/QL_orders", (req, res) => {
-  db.query("SELECT * FROM QL_orders", (err, result) => {
-    if (err) {
-      console.log("DB ERROR:", err);
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(result);
-  });
-});
-
 
 //lay all user
 app.get("/users", (req, res) => {
