@@ -52,7 +52,27 @@ app.get("/orders/:id", (req, res) => {
     }
   );
 });
+// lấy order theo id
+app.get("/QL_orders/:id", (req, res) => {
+  const id = req.params.id;
 
+  db.query(
+    "SELECT * FROM QL_orders WHERE id = ?",
+    [id],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json(err);
+      }
+
+      if (result.length === 0) {
+        return res.json(null);
+      }
+
+      res.json(result[0]);
+    }
+  );
+});
 //lay all user
 app.get("/users", (req, res) => {
   db.query("SELECT * FROM users", (err, result) => {
@@ -127,6 +147,7 @@ app.put("/users/:username", (req, res) => {
     }
   );
 });
+//TO_orders: maTO, danhSachGoiHang, diaDiemGiaoHang, trangThai, packer, totalWeight, ngayTao, completeTime
 //gửi dữ liệu lên server để tạo TO mới
 app.post("/TO_orders", (req, res) => {
   const {
@@ -163,6 +184,7 @@ app.post("/TO_orders", (req, res) => {
     }
   );
 });
+
 //api upload TO mới
 app.put("/TO_orders/:maTO", (req, res) => {
   const maTO = req.params.maTO;
@@ -196,6 +218,7 @@ app.put("/TO_orders/:maTO", (req, res) => {
     }
   );
 });
+
 //lay all TO
 app.get("/TO_orders", (req, res) => {
   db.query("SELECT * FROM TO_orders", (err, result) => {
@@ -206,6 +229,7 @@ app.get("/TO_orders", (req, res) => {
     res.json(result);
   });
 });
+
 // PORT Railway
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
