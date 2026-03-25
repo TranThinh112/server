@@ -52,27 +52,18 @@ app.get("/orders/:id", (req, res) => {
     }
   );
 });
-// lấy order theo id
-app.get("/QL_orders/:id", (req, res) => {
-  const id = req.params.id;
-
-  db.query(
-    "SELECT * FROM QL_orders WHERE id = ?",
-    [id],
-    (err, result) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json(err);
-      }
-
-      if (result.length === 0) {
-        return res.json(null);
-      }
-
-      res.json(result[0]);
+// lấy order theo id cho file quản lý
+app.get("/QL_orders", (req, res) => {
+  db.query("SELECT * FROM QL_orders", (err, result) => {
+    if (err) {
+      console.log("DB ERROR:", err);
+      return res.status(500).json({ error: err.message });
     }
-  );
+    res.json(result);
+  });
 });
+
+
 //lay all user
 app.get("/users", (req, res) => {
   db.query("SELECT * FROM users", (err, result) => {
