@@ -209,7 +209,18 @@ app.get("/TO_orders", (req, res) => {
     res.json(result);
   });
 });
+//lay cac to da packed
+app.get("/TO_orders/trangthai/:trangThai", (req, res) => {
+  const { trangThai } = req.params;
 
+  db.query("SELECT * FROM TO_orders WHERE trangThai = Packed", [trangThai], (err, result) => {
+    if (err) {
+      console.log("DB ERROR:", err);
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(result);
+  });
+});
 // PORT Railway
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
