@@ -53,18 +53,17 @@ app.get("/orders/:id", (req, res) => {
   );
 });
 //lấy order theo trạng thái
-app.get("/orders/status /:trangThai", (req, res) => {
-  const trangThai = 'Outbound';
+app.get("/orders/status/:trangThai", (req, res) => {
+  const trangThai = req.params.trangThai;
   db.query(
     "SELECT * FROM orders WHERE trangThai = ?", [trangThai], (err, result) => {
-       console.log("DB NAME:", process.env.DB_NAME);
       if (err) {
       return res.status(500).json({ error: err.message });
     }
-     console.log("RESULT:", result);
       res.json(result);
     });
 });
+
 //update trang thai order
 app.put("/orders/:id/:trangthai", (req, res) => {
   const id = req.params.id;
