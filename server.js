@@ -89,7 +89,7 @@ app.get("/TO_orders/:trangThai", (req, res) => {
 });
 //lấy order theo trạng thái
 app.get("/orders/:trangThai", (req, res) => {
-  const trangThai = 'Inbound';
+  const trangThai = 'Outbound';
 
   db.query(
     "SELECT * FROM orders WHERE trangThai = ?", [trangThai], (err, result) => {
@@ -97,6 +97,7 @@ app.get("/orders/:trangThai", (req, res) => {
       console.log("DB ERROR:", err);
       return res.status(500).json({ error: err.message });
     }
+     console.log("RESULT:", result);
       res.json(result);
     });
 });
