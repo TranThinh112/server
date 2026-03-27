@@ -52,7 +52,30 @@ app.get("/orders/:id", (req, res) => {
     }
   );
 });
+//lấy order theo trạng thái
+app.get("/orders/:trangthai", (req, res) => {
+  const trangthai = 'Inbound';
 
+  db.query(
+    "SELECT * FROM orders WHERE trangthai = ?",
+    [trangthai],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json(err);
+      }
+
+      if (result.length === 0) {
+        return res.json(null);
+      }
+
+      res.json(result[0]);
+    }
+  );
+});
+///
+//
+//api tạo user mới?//
 //lay all user
 app.get("/users", (req, res) => {
   db.query("SELECT * FROM users", (err, result) => {
@@ -127,7 +150,12 @@ app.put("/users/:username", (req, res) => {
     }
   );
 });
-//TO_orders: maTO, danhSachGoiHang, diaDiemGiaoHang, trangThai, packer, totalWeight, ngayTao, completeTime
+
+
+//TO_orders: maTO, danhSachGoiHang, diaDiemGiaoHang, trangThai, packer, totalWeight, ngayTao, completeTime ?//
+//
+//
+//
 //gửi dữ liệu lên server để tạo TO mới
 app.post("/TO_orders", (req, res) => {
   const {
@@ -210,10 +238,11 @@ app.get("/TO_orders", (req, res) => {
   });
 });
 //lay cac to da packed
-app.get("/TO_orders/trangthai/:trangThai", (req, res) => {
-  const { trangThai } = req.params;
+app.get("/TO_orders/:trangThai", (req, res) => {
+  const trangthai = 'Packed';
 
-  db.query("SELECT * FROM TO_orders WHERE trangThai = Packed", [trangThai], (err, result) => {
+  db.query(
+    "SELECT * FROM TO_orders WHERE trangThai = ?", [trangthai], (err, result) => {
     if (err) {
       console.log("DB ERROR:", err);
       return res.status(500).json({ error: err.message });
