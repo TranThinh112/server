@@ -254,8 +254,8 @@ app.get("/TO_orders", (req, res) => {
   });
 });
 //lay cac to da packed
-app.get("/TO_orders/:trangThai", (req, res) => {
-  const trangthai = 'Packed';
+app.get("/TO_orders/status/:trangThai", (req, res) => {
+  const trangthai = req.params.trangThai;
 
   db.query(
     "SELECT * FROM TO_orders WHERE trangThai = ?", [trangthai], (err, result) => {
