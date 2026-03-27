@@ -52,13 +52,48 @@ app.get("/orders/:id", (req, res) => {
     }
   );
 });
-//lấy order theo trạng thái
-app.get("/orders/:trangthai", (req, res) => {
-  const trangthai = 'Inbound';
+//update trang thai order
+app.put("/orders/:id/:trangthai", (req, res) => {
+  const id = req.params.id;
+  const { trangthai } = req.params;
 
   db.query(
-    "SELECT * FROM orders WHERE trangthai = ?",
-    [trangthai],
+    "UPDATE orders SET trangthai = ? WHERE id = ?",
+    [trangthai, id],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json(err);
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+
+      res.json({ success: true });
+    }
+  );
+});
+//lay cac to da packed
+app.get("/TO_orders/:trangThai", (req, res) => {
+  const trangthai = 'Packed';
+
+  db.query(
+    "SELECT * FROM TO_orders WHERE trangThai = ?", [trangthai], (err, result) => {
+    if (err) {
+      console.log("DB ERROR:", err);
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(result);
+  });
+});
+//lấy order theo trạng thái
+app.get("/orders/:trangThai", (req, res) => {
+  const trangThai = 'Inbound';
+
+  db.query(
+    "SELECT * FROM orders WHERE trangThai = ?",
+    [trangThai],
     (err, result) => {
       if (err) {
         console.log(err);
