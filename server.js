@@ -74,19 +74,6 @@ app.put("/orders/:id/:trangthai", (req, res) => {
     }
   );
 });
-//lay cac to da packed
-app.get("/TO_orders/:trangThai", (req, res) => {
-  const trangthai = 'Packed';
-
-  db.query(
-    "SELECT * FROM TO_orders WHERE trangThai = ?", [trangthai], (err, result) => {
-    if (err) {
-      console.log("DB ERROR:", err);
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(result);
-  });
-});
 //lấy order theo trạng thái
 app.get("/orders/:trangThai", (req, res) => {
   const trangThai = 'Inbound';
@@ -96,17 +83,11 @@ app.get("/orders/:trangThai", (req, res) => {
     [trangThai],
     (err, result) => {
       if (err) {
-        console.log(err);
-        return res.status(500).json(err);
-      }
-
-      if (result.length === 0) {
-        return res.json(null);
-      }
-
-      res.json(result[0]);
+      console.log("DB ERROR:", err);
+      return res.status(500).json({ error: err.message });
     }
-  );
+      res.json(result[0]);
+    });
 });
 ///
 //
