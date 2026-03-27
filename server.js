@@ -90,7 +90,7 @@ app.get("/TO_orders/:trangThai", (req, res) => {
 //lấy order theo trạng thái
 app.get("/orders/:trangThai", (req, res) => {
   const trangThai = 'Outbound';
-
+  console.log("DB NAME:", process.env.DB_NAME);
   db.query(
     "SELECT * FROM orders WHERE trangThai = ?", [trangThai], (err, result) => {
       if (err) {
