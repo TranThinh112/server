@@ -52,6 +52,19 @@ app.get("/orders/:id", (req, res) => {
     }
   );
 });
+//lấy order theo trạng thái
+app.get("/orders/:trangThai", (req, res) => {
+  const trangThai = 'Outbound';
+  db.query(
+    "SELECT * FROM orders WHERE trangThai = ?", [trangThai], (err, result) => {
+       console.log("DB NAME:", process.env.DB_NAME);
+      if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+     console.log("RESULT:", result);
+      res.json(result);
+    });
+});
 //update trang thai order
 app.put("/orders/:id/:trangthai", (req, res) => {
   const id = req.params.id;
@@ -74,33 +87,7 @@ app.put("/orders/:id/:trangthai", (req, res) => {
     }
   );
 });
-//lay cac to da packed
-app.get("/TO_orders/:trangThai", (req, res) => {
-  const trangthai = 'Packed';
 
-  db.query(
-    "SELECT * FROM TO_orders WHERE trangThai = ?", [trangthai], (err, result) => {
-    if (err) {
-      console.log("DB ERROR:", err);
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(result);
-  });
-});
-//lấy order theo trạng thái
-app.get("/orders/:trangThai", (req, res) => {
-  const trangThai = 'Outbound';
-  db.query(
-    "SELECT * FROM orders WHERE trangThai = ?", [trangThai], (err, result) => {
-       console.log("DB NAME:", process.env.DB_NAME);
-      if (err) {
-      console.log("DB ERROR:", err);
-      return res.status(500).json({ error: err.message });
-    }
-     console.log("RESULT:", result);
-      res.json(result);
-    });
-});
 
 
 ///
