@@ -53,7 +53,7 @@ app.get("/orders/:id", (req, res) => {
   );
 });
 //lấy order theo trạng thái
-app.get("/orders/:trangThai", (req, res) => {
+app.get("/orders/status /:trangThai", (req, res) => {
   const trangThai = 'Outbound';
   db.query(
     "SELECT * FROM orders WHERE trangThai = ?", [trangThai], (err, result) => {
