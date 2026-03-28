@@ -23,35 +23,48 @@ app.get("/", (req, res) => {
 
 // test API
 app.get("/orders", (req, res) => {
-  const { id, trangThai } = req.query;
-
-  let sql = "SELECT * FROM orders";
-  let params = [];
-
-  if (id) {
-    sql += " WHERE id = ?";
-    params.push(id);
-  } else if (trangThai) {
-    sql += " WHERE trangThai = ?";
-    params.push(trangThai);
-  }
-
-  db.query(sql, params, (err, result) => {
+  db.query("SELECT * FROM orders", (err, result) => {
     if (err) {
       console.log("DB ERROR:", err);
       return res.status(500).json({ error: err.message });
     }
-
-    // nếu tìm theo id → trả 1 object
-    if (id) {
-      return res.json(result[0] || null);
-    }
-
-    // còn lại trả list
     res.json(result);
   });
 });
 
+////////////////////////////////// lấy order theo id ///////////////////////////////
+app.get("/orders/:id", (req, res) => {
+  const id = req.params.id;
+
+  db.query(
+    "SELECT * FROM orders WHERE id = ?",
+    [id],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json(err);
+      }
+
+      if (result.length === 0) {
+        return res.json(null);
+      }
+
+      res.json(result[0]);
+    }
+  );
+});
+
+////////////////////// lấy order theo trạng thái /////////////////////////////
+app.get("/orders/status/:trangThai", (req, res) => {
+  const trangThai = req.params.trangThai;
+  db.query(
+    "SELECT * FROM orders WHERE trangThai = ?", [trangThai], (err, result) => {
+      if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+      res.json(result);
+    });
+});
 
 ////////////////////////////////////////////////// update trang thai order ///////////////////////////////////////
 app.put("/orders/:id/:trangthai", (req, res) => {
@@ -273,6 +286,7 @@ app.get("/TO_orders/status/:trangThai", (req, res) => {
     res.json(result);
   });
 });
+
 
 ////////////////////////////////////////////////////////// PORT Railway //////////////////////////////////////////////////////////////
 const PORT = process.env.PORT || 3000;
