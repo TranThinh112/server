@@ -31,7 +31,8 @@ app.get("/orders", (req, res) => {
     res.json(result);
   });
 });
-// lấy order theo id
+
+////////////////////////////////// lấy order theo id ///////////////////////////////
 app.get("/orders/:id", (req, res) => {
   const id = req.params.id;
 
@@ -52,7 +53,8 @@ app.get("/orders/:id", (req, res) => {
     }
   );
 });
-//lấy order theo trạng thái
+
+////////////////////// lấy order theo trạng thái /////////////////////////////
 app.get("/orders/status/:trangThai", (req, res) => {
   const trangThai = req.params.trangThai;
   db.query(
@@ -63,19 +65,8 @@ app.get("/orders/status/:trangThai", (req, res) => {
       res.json(result);
     });
 });
-//lay theo thoi gian
-//lấy order theo trạng thái
-app.get("/orders/status/:thoiGianDongBao", (req, res) => {
-  const thoiGianDongBao = req.params.thoiGianDongBao;
-  db.query(
-    "SELECT * FROM orders WHERE thoiGianDongBao = ?", [thoiGianDongBao], (err, result) => {
-      if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-      res.json(result);
-    });
-});
-//update trang thai order
+
+////////////////////////////////////////////////// update trang thai order ///////////////////////////////////////
 app.put("/orders/:id/:trangthai", (req, res) => {
   const id = req.params.id;
   const { trangthai } = req.params;
@@ -93,11 +84,12 @@ app.put("/orders/:id/:trangthai", (req, res) => {
         return res.status(404).json({ error: "Order not found" });
       }
 
-      res.json({ success: true });
+      res.json({ success: Status_ok });
     }
   );
 });
-//update thoi gian quet cua don hang
+
+////////////////////////////////////////////////// update thoi gian quet cua don hang ///////////////////////////////////////
 app.put("/orders/:id/:thoiGianDongBao", (req, res) => {
   const id = req.params.id;
   const { thoiGianDongBao } = req.params;
@@ -113,12 +105,13 @@ app.put("/orders/:id/:thoiGianDongBao", (req, res) => {
       if (result.affectedRows === 0) {
         return res.status(404).json({ error: "Order not found" });
       }
+       res.json({ success: Time_update_ok });
     } 
   )
 });
 
 
-///
+                        ///////////////////////////////// USERS ////////////////////////////////////////////////////////////
 //
 //api tạo user mới?//
 //lay all user
@@ -197,10 +190,7 @@ app.put("/users/:username", (req, res) => {
 });
 
 
-//TO_orders: maTO, danhSachGoiHang, diaDiemGiaoHang, trangThai, packer, totalWeight, ngayTao, completeTime ?//
-//
-//
-//
+//////////////////////////////////////////////////////////////////////////////////// TO_orders ///////////////////////////////////////////////////////////////////////
 //gửi dữ liệu lên server để tạo TO mới
 app.post("/TO_orders", (req, res) => {
   const {
@@ -233,7 +223,7 @@ app.post("/TO_orders", (req, res) => {
         console.log("DB ERROR:", err);
         return res.status(500).json(err);
       }
-      res.json({ success: true });
+      res.json({ success: gui_TO_ok });
     }
   );
 });
@@ -267,7 +257,7 @@ app.put("/TO_orders/:maTO", (req, res) => {
     ],
     (err) => {
       if (err) return res.status(500).json(err);
-      res.json({ success: true });
+      res.json({ success: upload_TO_ok });
     }
   );
 });
@@ -295,7 +285,9 @@ app.get("/TO_orders/status/:trangThai", (req, res) => {
     res.json(result);
   });
 });
-// PORT Railway
+
+
+////////////////////////////////////////////////////////// PORT Railway //////////////////////////////////////////////////////////////
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
