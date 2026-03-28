@@ -63,7 +63,18 @@ app.get("/orders/status/:trangThai", (req, res) => {
       res.json(result);
     });
 });
-
+//lay theo thoi gian
+//lấy order theo trạng thái
+app.get("/orders/status/:thoiGianDongBao", (req, res) => {
+  const thoiGianDongBao = req.params.thoiGianDongBao;
+  db.query(
+    "SELECT * FROM orders WHERE thoiGianDongBao = ?", [thoiGianDongBao], (err, result) => {
+      if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+      res.json(result);
+    });
+});
 //update trang thai order
 app.put("/orders/:id/:trangthai", (req, res) => {
   const id = req.params.id;
@@ -104,26 +115,7 @@ app.put("/orders/:id/:thoiGianDongBao", (req, res) => {
       }
     } 
   )
-})
-//update thoi gian quet cua don hang
-app.get("/orders/:id/:thoiGianDongBao", (req, res) => {
-  const id = req.params.id;
-  const { thoiGianDongBao } = req.params;
-
-  db.query(
-    "UPDATE orders SET thoiGianDongBao = ? WHERE id = ?",
-    [thoiGianDongBao, id],
-    (err, result) => { 
-      if (err) {
-        console.log(err);
-        return res.status(500).json(err);
-      }
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ error: "Order not found" });
-      }
-    } 
-  )
-})
+});
 
 
 ///
