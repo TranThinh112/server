@@ -130,7 +130,7 @@ app.post("/orders",(req,res)=> {
 //
 //api tạo user mới?//
 //lay all user
-app.get("/users", (req, res) => {
+app.get("/login/users", (req, res) => {
   db.query("SELECT * FROM users", (err, result) => {
     if (err) {
       console.log("DB ERROR:", err);
@@ -142,10 +142,10 @@ app.get("/users", (req, res) => {
 
 
 // tìm user
-app.get("/users/:username", handleUser);
+app.get("/login/users/:username", handleUser);
 
 // 🔐 login
-app.get("/users/:username/:password", handleUser);
+app.get("/login/users/:username/:password", handleUser);
 
 //  dùng chung logic
 function handleUser(req, res) {
