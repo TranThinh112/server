@@ -109,20 +109,21 @@ app.put("/orders/:id/timedong/:thoiGianDongBao", (req, res) => {
     } 
   )
 });
-//tao order moi
-app.post("/orders", (req, res) => {
-  const {id, nguoiGui,nguoiNhan,diaChiGui, diaChiNhan, sanPham, soKi, giaTien} = req.body;
-db.query(
-  "INSERT INTO orders (id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, sanPham, soKi, giaTien) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-  [id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, sanPham, soKi, giaTien],
-  (err, result) => {
-    if (err) {
-      console.log("DB ERROR:", err);
-      return res.status(500).json({ error: err.message });
+//tao order moi tu form
+app.post("/orders",(req,res)=> {
+  const {nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, sanPham, soKi, giaTien}=req.body;
+  db.query(
+    'Iinsert into orders(nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, soKi, giaTien, sanPham) values(?,?,?,?,?,?,?)',
+    [nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, soKi, giaTien, sanPham],
+    (err, result) =>{
+     if (err){
+      console.log("DB error:", err);
+      return res.status(500).json({ error: err.message});
+     }
+      return res.json({ success: true });
     }
-    res.json({ success: true });
-  });
-});
+  )
+})
 
 
                         ///////////////////////////////// USERS ////////////////////////////////////////////////////////////
