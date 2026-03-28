@@ -67,7 +67,7 @@ app.get("/orders/status/:trangThai", (req, res) => {
 });
 
 ////////////////////////////////////////////////// update trang thai order ///////////////////////////////////////
-app.put("/orders/:id/:trangthai", (req, res) => {
+app.put("/orders/:id/status/:trangthai", (req, res) => {
   const id = req.params.id;
   const { trangthai } = req.params;
 
@@ -84,13 +84,13 @@ app.put("/orders/:id/:trangthai", (req, res) => {
         return res.status(404).json({ error: "Order not found" });
       }
 
-      res.json({ success: up_trangthai_ok });
+      res.json({ success: true });
     }
   );
 });
 
 ////////////////////////////////////////////////// update thoi gian quet cua don hang ///////////////////////////////////////
-app.put("/orders/:id/:thoiGianDongBao", (req, res) => {
+app.put("/orders/:id/timedong/:thoiGianDongBao", (req, res) => {
   const id = req.params.id;
   const { thoiGianDongBao } = req.params;
 
