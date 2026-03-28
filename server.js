@@ -105,7 +105,25 @@ app.put("/orders/:id/:thoiGianDongBao", (req, res) => {
     } 
   )
 })
+//update thoi gian quet cua don hang
+app.get("/orders/:id/:thoiGianDongBao", (req, res) => {
+  const id = req.params.id;
+  const { thoiGianDongBao } = req.params;
 
+  db.query(
+    "UPDATE orders SET thoiGianDongBao = ? WHERE id = ?",
+    [thoiGianDongBao, id],
+    (err, result) => { 
+      if (err) {
+        console.log(err);
+        return res.status(500).json(err);
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+    } 
+  )
+})
 
 
 ///
