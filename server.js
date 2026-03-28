@@ -84,7 +84,7 @@ app.put("/orders/:id/:trangthai", (req, res) => {
         return res.status(404).json({ error: "Order not found" });
       }
 
-      res.json({ success: Status_ok });
+      res.json({ success: true });
     }
   );
 });
@@ -105,7 +105,7 @@ app.put("/orders/:id/:thoiGianDongBao", (req, res) => {
       if (result.affectedRows === 0) {
         return res.status(404).json({ error: "Order not found" });
       }
-       res.json({ success: Time_update_ok });
+       res.json({ success: true });
     } 
   )
 });
@@ -126,13 +126,13 @@ app.get("/users", (req, res) => {
 });
 
 
-// 🔍 tìm user
+// tìm user
 app.get("/users/:username", handleUser);
 
 // 🔐 login
 app.get("/users/:username/:password", handleUser);
 
-// 👉 dùng chung logic
+//  dùng chung logic
 function handleUser(req, res) {
   const username = req.params.username;
   const password = req.params.password;
@@ -223,7 +223,7 @@ app.post("/TO_orders", (req, res) => {
         console.log("DB ERROR:", err);
         return res.status(500).json(err);
       }
-      res.json({ success: gui_TO_ok });
+      res.json({ success: true});
     }
   );
 });
@@ -257,7 +257,7 @@ app.put("/TO_orders/:maTO", (req, res) => {
     ],
     (err) => {
       if (err) return res.status(500).json(err);
-      res.json({ success: upload_TO_ok });
+      res.json({ success: true });
     }
   );
 });
