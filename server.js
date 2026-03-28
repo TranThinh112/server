@@ -111,10 +111,10 @@ app.put("/orders/:id/timedong/:thoiGianDongBao", (req, res) => {
 });
 //tao order moi
 app.post("/orders", (req, res) => {
-  const {nguoiGui,nguoiNhan,diaChiGui, diaChiNhan, sanPham, soKi, giaTien} = req.body;
+  const {id, nguoiGui,nguoiNhan,diaChiGui, diaChiNhan, sanPham, soKi, giaTien} = req.body;
 db.query(
-  "INSERT INTO orders (nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, sanPham, soKi, giaTien) VALUES (?, ?, ?, ?, ?, ?, ?)",
-  [nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, sanPham, soKi, giaTien],
+  "INSERT INTO orders (id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, sanPham, soKi, giaTien) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+  [id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, sanPham, soKi, giaTien],
   (err, result) => {
     if (err) {
       console.log("DB ERROR:", err);
