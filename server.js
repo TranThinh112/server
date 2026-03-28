@@ -125,7 +125,24 @@ app.post("/orders",(req,res)=> {
   )
 })
 
+//// tets sql 
+// ❌ API login dễ dính SQLi
+app.get("/test", (req, res) => {
+  const username = req.query.username;
+  const password = req.query.password;
 
+  // ❌ NỐI CHUỖI (NGUY HIỂM)
+  const sql = `SELECT * FROM users 
+               WHERE username = '${username}' 
+               AND password = '${password}'`;
+
+  db.query(sql, (err, result) => {
+    if (err) return res.status(500).json(err);
+    res.json(result);
+  });
+});
+
+app.listen(3000, () => console.log("Server running"));
                         ///////////////////////////////// USERS ////////////////////////////////////////////////////////////
 //
 //api tạo user mới?//
@@ -167,7 +184,7 @@ function handleUser(req, res) {
 }
 
 // cập nhật mật khẩu user theo username
-app.put("/users/:username", (req, res) => {
+app.put("/login/users/:username", (req, res) => {
   const username = req.params.username;
   const { password } = req.body;
 
