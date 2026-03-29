@@ -225,7 +225,7 @@ app.put("/login/users/:username", (req, res) => {
 //gửi dữ liệu lên server để tạo TO mới
 app.post("/TO_orders", (req, res) => {
   const {
-    maTO,
+    TO_ID,
     danhSachGoiHang,
     diaDiemGiaoHang,
     trangThai,
@@ -237,10 +237,10 @@ app.post("/TO_orders", (req, res) => {
 
   db.query(
     `INSERT INTO TO_orders 
-    (maTO, danhSachGoiHang, diaDiemGiaoHang, trangThai, packer, totalWeight, ngayTao, completeTime)
+    (TO_ID, danhSachGoiHang, diaDiemGiaoHang, trangThai, packer, totalWeight, ngayTao, completeTime)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      maTO,
+      TO_ID,
       JSON.stringify(danhSachGoiHang), // 🔥 convert list → string
       diaDiemGiaoHang,
       trangThai,
@@ -260,8 +260,8 @@ app.post("/TO_orders", (req, res) => {
 });
 
 //api upload TO mới
-app.put("/TO_orders/:maTO", (req, res) => {
-  const maTO = req.params.maTO;
+app.put("/TO_orders/:TO_ID", (req, res) => {
+  const TO_ID = req.params.TO_ID;
   const {
     danhSachGoiHang,
     diaDiemGiaoHang,
@@ -277,14 +277,15 @@ app.put("/TO_orders/:maTO", (req, res) => {
       trangThai=?,
       totalWeight=?,
       completeTime=?
-     WHERE maTO=?`,
+     WHERE TO_ID=?`,
     [
       JSON.stringify(danhSachGoiHang),
       diaDiemGiaoHang,
       trangThai,
       totalWeight,
       completeTime,
-      maTO
+      TO_ID
+
     ],
     (err) => {
       if (err) return res.status(500).json(err);
