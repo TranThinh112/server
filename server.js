@@ -32,56 +32,50 @@ app.get("/orders", (req, res) => {
   });
 });
 ////////////////////////////////// lấy order theo id ///////////////////////////////
-app.get("/orders/:id", (req, res) => {
-  const id = req.params.id;
+app.get('/orders', (req, res) => {
+  const { id, trangThai } = req.query;
 
-  db.query(
-    "SELECT * FROM orders WHERE id = ?",
-    [id],
-    (err, result) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json(err);
-      }
+  let sql = "SELECT * FROM orders";
+  let values = [];
 
-      if (result.length === 0) {
-        return res.json(null);
-      }
+  if (id) {
+    sql += " WHERE id = ?";
+    values.push(id);
+  } else if (trangThai) {
+    sql += " WHERE trangThai = ?";
+    values.push(trangThai);
+  }
 
-      res.json(result[0]);
+  db.query(sql, values, (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    // nếu tìm theo id → trả 1 object
+    if (id) {
+      return res.json(result[0] || null);
     }
-  );
-});
 
-////////////////////// lấy order theo trạng thái /////////////////////////////
-app.get("/orders/status/:trangThai", (req, res) => {
-  const trangThai = req.params.trangThai;
-  db.query(
-    "SELECT * FROM orders WHERE trangThai = ?", [trangThai], (err, result) => {
-      if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-      res.json(result);
-    });
+    // còn lại → trả list
+    res.json(result);
+  });
 });
 
 
 //// tets sql 
 // ❌ API login dễ dính SQLi
-app.get("/test", (req, res) => {
-  const username = req.query.username;
-  const password = req.query.password;
+// app.get("/test", (req, res) => {
+//   const username = req.query.username;
+//   const password = req.query.password;
 
-  // ❌ NỐI CHUỖI (NGUY HIỂM)
-  const sql = `SELECT * FROM users 
-               WHERE username = '${username}' 
-               AND password = '${password}'`;
+//   // ❌ NỐI CHUỖI (NGUY HIỂM)
+//   const sql = `SELECT * FROM users 
+//                WHERE username = '${username}' 
+//                AND password = '${password}'`;
 
-  db.query(sql, (err, result) => {
-    if (err) return res.status(500).json(err);
-    res.json(result);
-  });
-});
+//   db.query(sql, (err, result) => {
+//     if (err) return res.status(500).json(err);
+//     res.json(result);
+//   });
+// });
 
 //upload 3 loai: trangThai. timepacke. maTO
 app.put('/orders/:id', (req, res) => {
