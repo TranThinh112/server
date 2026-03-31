@@ -79,7 +79,7 @@ app.get('/orders', (req, res) => {
 // });
 
 //upload 3 loai: trangThai. timepacke. maTO
-app.put('/orders/id', (req, res) => {
+app.put('/orders/:id', (req, res) => {
   const { id } = req.params;
 
   const allowed = ['trangThai', 'thoiGianDongBao', 'maTO'];
@@ -331,7 +331,7 @@ app.put("/TO_orders/:maTO", (req, res) => {
 app.get("/TO_orders", (req, res) => {
   const {trangThai} = req.query;
 
-  let query = "SELECT * FROM TO_orders";
+  let sql = "SELECT * FROM TO_orders";
   let values = [];
 
   if (trangThai) {
