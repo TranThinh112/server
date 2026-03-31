@@ -340,13 +340,36 @@ app.get("/TO_orders", (req, res) => {
   }
 
  db.query(sql, values, (err, result) => {
-    if (err) {
-      console.log("DB ERROR:", err);
-      return res.status(500).json({ error: err.message });
-    }
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(result);
 });
 });
 
+//test
+app.get('/orders', (req, res) => {
+  const { id, trangThai } = req.query;
+
+  console.log("Query params:", req.query);
+
+  let sql = "SELECT * FROM orders";
+  let values = [];
+
+  if (id) {
+    sql += " WHERE id = ?";
+    values.push(id);
+  } else if (trangThai) {
+    sql += " WHERE LOWER(trangThai) = LOWER(?)";
+    values.push(trangThai);
+  }
+
+  db.query(sql, values, (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    if (id) return res.json(result[0] || null);
+
+    res.json(result);
+  });
+});
 ////////////////////////////////////////////////////////// PORT Railway //////////////////////////////////////////////////////////////
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
