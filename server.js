@@ -79,7 +79,7 @@ app.get('/orders', (req, res) => {
 // });
 
 //upload 3 loai: trangThai. timepacke. maTO
-app.put('/orders/:id', (req, res) => {
+app.put('/orders/id', (req, res) => {
   const { id } = req.params;
 
   const allowed = ['trangThai', 'thoiGianDongBao', 'maTO'];
@@ -333,6 +333,12 @@ app.get("/TO_orders", (req, res) => {
 
   let query = "SELECT * FROM TO_orders";
   let values = [];
+
+  if (trangThai) {
+    sql += " WHERE LOWER(trangThai) = LOWER(?)";
+    values.push(trangThai);
+  }
+
  db.query(sql, values, (err, result) => {
     if (err) {
       console.log("DB ERROR:", err);
@@ -340,6 +346,7 @@ app.get("/TO_orders", (req, res) => {
     }
 });
 });
+
 ////////////////////////////////////////////////////////// PORT Railway //////////////////////////////////////////////////////////////
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
