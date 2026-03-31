@@ -33,20 +33,35 @@ app.get("/", (req, res) => {
 // });
 ////////////////////////////////// lấy order theo id, lay order theo trạng thái ///////////////////////////////
 app.get('/orders', (req, res) => {
-  const { id, trangThai } = req.query;
+  let { id, trangThai, page = 1, limit = 10 } = req.query;
+
+  page = Number(page);
+  limit = Number(limit);
+  const offset = (page - 1) * limit;
 
   console.log("Query params:", req.query);
 
   let sql = "SELECT * FROM orders";
   let values = [];
+  let conditions = [];
 
+  /// 🔹 lọc theo id
   if (id) {
-    sql += " WHERE id = ?";
+    conditions.push("id = ?");
     values.push(id);
-  } else if (trangThai) {
-    sql += " WHERE LOWER(trangThai) = LOWER(?)";
+  }
+  /// 🔹 lọc theo trạng thái
+  if (trangThai) {
+    conditions.push("LOWER(trangThai) = LOWER(?)");
     values.push(trangThai);
   }
+  /// 🔹 nếu có điều kiện → thêm WHERE
+  if (conditions.length > 0) {
+    sql += " WHERE " + conditions.join(" AND ");
+  }
+  /// 🔹 thêm pagination
+  sql += " LIMIT ? OFFSET ?";
+  values.push(limit, offset);
 
   console.log("SQL:", sql);
   console.log("Values:", values);
@@ -54,6 +69,7 @@ app.get('/orders', (req, res) => {
   db.query(sql, values, (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
 
+    /// nếu tìm theo id → trả 1 object
     if (id) return res.json(result[0] || null);
 
     res.json(result);
