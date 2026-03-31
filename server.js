@@ -116,48 +116,48 @@ app.put('/orders/:id', async (req, res) => {
 });
 
 ////////////////////////////////////////////////// update trang thai order ///////////////////////////////////////
-app.put("/orders/:id/status/:trangthai", (req, res) => {
-  const id = req.params.id;
-  const { trangthai } = req.params;
+// app.put("/orders/:id/status/:trangthai", (req, res) => {
+//   const id = req.params.id;
+//   const { trangthai } = req.params;
 
-  db.query(
-    "UPDATE orders SET trangthai = ? WHERE id = ?",
-    [trangthai, id],
-    (err, result) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json(err);
-      }
+//   db.query(
+//     "UPDATE orders SET trangthai = ? WHERE id = ?",
+//     [trangthai, id],
+//     (err, result) => {
+//       if (err) {
+//         console.log(err);
+//         return res.status(500).json(err);
+//       }
 
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ error: "Order not found" });
-      }
+//       if (result.affectedRows === 0) {
+//         return res.status(404).json({ error: "Order not found" });
+//       }
 
-      res.json({ success: true });
-    }
-  );
-});
+//       res.json({ success: true });
+//     }
+//   );
+// });
 
 ////////////////////////////////////////////////// update thoi gian quet cua don hang ///////////////////////////////////////
-app.put("/orders/:id/timedong/:thoiGianDongBao", (req, res) => {
-  const id = req.params.id;
-  const { thoiGianDongBao } = req.params;
+// app.put("/orders/:id/timedong/:thoiGianDongBao", (req, res) => {
+//   const id = req.params.id;
+//   const { thoiGianDongBao } = req.params;
 
-  db.query(
-    "UPDATE orders SET thoiGianDongBao = ? WHERE id = ?",
-    [thoiGianDongBao, id],
-    (err, result) => { 
-      if (err) {
-        console.log(err);
-        return res.status(500).json(err);
-      }
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ error: "Order not found" });
-      }
-       res.json({ success: true });
-    } 
-  )
-});
+//   db.query(
+//     "UPDATE orders SET thoiGianDongBao = ? WHERE id = ?",
+//     [thoiGianDongBao, id],
+//     (err, result) => { 
+//       if (err) {
+//         console.log(err);
+//         return res.status(500).json(err);
+//       }
+//       if (result.affectedRows === 0) {
+//         return res.status(404).json({ error: "Order not found" });
+//       }
+//        res.json({ success: true });
+//     } 
+//   )
+// });
 //tao order moi tu form
 app.post("/orders",(req,res)=> {
   const {nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, sanPham, soKi, giaTien}=req.body;
