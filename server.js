@@ -21,16 +21,16 @@ app.get("/", (req, res) => {
   res.send("API is running 🚀");
 });
 
-// lay toan bo order
-app.get("/orders", (req, res) => {
-  db.query("SELECT * FROM orders", (err, result) => {
-    if (err) {
-      console.log("DB ERROR:", err);
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(result);
-  });
-});
+// // lay toan bo order
+// app.get("/orders", (req, res) => {
+//   db.query("SELECT * FROM orders", (err, result) => {
+//     if (err) {
+//       console.log("DB ERROR:", err);
+//       return res.status(500).json({ error: err.message });
+//     }
+//     res.json(result);
+//   });
+// });
 ////////////////////////////////// lấy order theo id, lay order theo trạng thái ///////////////////////////////
 app.get('/orders', (req, res) => {
   const { id, trangThai } = req.query;
