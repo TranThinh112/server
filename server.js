@@ -21,7 +21,7 @@ app.get("/", (req, res) => {
   res.send("API is running 🚀");
 });
 
-// test API
+// lay toan bo order
 app.get("/orders", (req, res) => {
   db.query("SELECT * FROM orders", (err, result) => {
     if (err) {
@@ -31,7 +31,6 @@ app.get("/orders", (req, res) => {
     res.json(result);
   });
 });
-
 ////////////////////////////////// lấy order theo id ///////////////////////////////
 app.get("/orders/:id", (req, res) => {
   const id = req.params.id;
@@ -86,33 +85,46 @@ app.get("/test", (req, res) => {
 
 ///////////////////////////////////////////////testr ////////////////////////////////
 app.put('/orders/:id', async (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  // whitelist field được update
-  const allowedFields = ['trangThai', 'thoiGianDongBao','maTO'];
-  let updateData = {};
+    const allowedFields = ['trangThai', 'thoiGianDongBao', 'maTO'];
+    let updateData = {};
 
-  for (let key of allowedFields) {
-    if (req.body[key] !== undefined) {
-      updateData[key] = req.body[key];
+    for (let key of allowedFields) {
+      if (req.body[key] !== undefined) {
+        updateData[key] = req.body[key];
+      }
     }
-  }
 
-  // không có gì để update
-  if (Object.keys(updateData).length === 0) {
-    return res.status(400).json({
-      message: "No valid fields to update"
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({
+        message: "No valid fields to update"
+      });
+    }
+    // UPDATE SQL
+    const [updated] = await Order.update(updateData, {
+      where: { maDon: id } // ⚠️ id là SPXVN... nên phải dùng maDon
+    });
+
+    if (updated === 0) {
+      return res.status(404).json({
+        message: "Order not found"
+      });
+    }
+    // lấy lại dữ liệu sau update
+    const updatedOrder = await Order.findOne({
+      where: { maDon: id }
+    });
+
+    return res.json(updatedOrder);
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      message: "Internal Server Error"
     });
   }
-
-  // update DB
-  const updatedOrder = await Order.findByIdAndUpdate(
-    id,
-    updateData,
-    { new: true }
-  );
-
-  return res.json(updatedOrder);
 });
 
 ////////////////////////////////////////////////// update trang thai order ///////////////////////////////////////
