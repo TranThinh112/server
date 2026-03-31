@@ -66,6 +66,55 @@ app.get("/orders/status/:trangThai", (req, res) => {
     });
 });
 
+
+//// tets sql 
+// ❌ API login dễ dính SQLi
+app.get("/test", (req, res) => {
+  const username = req.query.username;
+  const password = req.query.password;
+
+  // ❌ NỐI CHUỖI (NGUY HIỂM)
+  const sql = `SELECT * FROM users 
+               WHERE username = '${username}' 
+               AND password = '${password}'`;
+
+  db.query(sql, (err, result) => {
+    if (err) return res.status(500).json(err);
+    res.json(result);
+  });
+});
+
+///////////////////////////////////////////////testr ////////////////////////////////
+app.put('/orders/:id', async (req, res) => {
+  const { id } = req.params;
+
+  // whitelist field được update
+  const allowedFields = ['status', 'thoigian'];
+  let updateData = {};
+
+  for (let key of allowedFields) {
+    if (req.body[key] !== undefined) {
+      updateData[key] = req.body[key];
+    }
+  }
+
+  // không có gì để update
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({
+      message: "No valid fields to update"
+    });
+  }
+
+  // update DB
+  const updatedOrder = await Order.findByIdAndUpdate(
+    id,
+    updateData,
+    { new: true }
+  );
+
+  return res.json(updatedOrder);
+});
+
 ////////////////////////////////////////////////// update trang thai order ///////////////////////////////////////
 app.put("/orders/:id/status/:trangthai", (req, res) => {
   const id = req.params.id;
@@ -125,22 +174,6 @@ app.post("/orders",(req,res)=> {
   )
 })
 
-//// tets sql 
-// ❌ API login dễ dính SQLi
-app.get("/test", (req, res) => {
-  const username = req.query.username;
-  const password = req.query.password;
-
-  // ❌ NỐI CHUỖI (NGUY HIỂM)
-  const sql = `SELECT * FROM users 
-               WHERE username = '${username}' 
-               AND password = '${password}'`;
-
-  db.query(sql, (err, result) => {
-    if (err) return res.status(500).json(err);
-    res.json(result);
-  });
-});
 
                         ///////////////////////////////// USERS ////////////////////////////////////////////////////////////
 //
