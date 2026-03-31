@@ -89,7 +89,7 @@ app.put('/orders/:id', async (req, res) => {
   const { id } = req.params;
 
   // whitelist field được update
-  const allowedFields = ['status', 'thoigian'];
+  const allowedFields = ['trangThai', 'thoiGianDongBao','maTO'];
   let updateData = {};
 
   for (let key of allowedFields) {
