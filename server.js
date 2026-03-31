@@ -327,59 +327,19 @@ app.put("/TO_orders/:maTO", (req, res) => {
   );
 });
 
-//test
-// app.get('/orders', (req, res) => {
-//   const { id, trangThai } = req.query;
-
-//   let sql = "SELECT * FROM orders";
-//   let values = [];
-
-//   if (id) {
-//     sql += " WHERE id = ?";
-//     values.push(id);
-//   } else if (trangThai) {
-//     sql += " WHERE trangThai = ?";
-//     values.push(trangThai);
-//   }
-
-//   db.query(sql, values, (err, result) => {
-//     if (err) return res.status(500).json({ error: err.message });
-
-//     // nếu tìm theo id → trả 1 object
-//     if (id) {
-//       return res.json(result[0] || null);
-//     }
-
-//     // còn lại → trả list
-//     res.json(result);
-//   });
-// });
-//lay all TO
+/////////////////////////////////lay all TO va lay TO theo trang thai /////////////////////////
 app.get("/TO_orders", (req, res) => {
-  db.query("SELECT * FROM TO_orders", (err, result) => {
+  const {trangThai} = req.query;
+
+  let query = "SELECT * FROM TO_orders";
+  let values = [];
+ db.query(sql, values, (err, result) => {
     if (err) {
       console.log("DB ERROR:", err);
       return res.status(500).json({ error: err.message });
     }
-    res.json(result);
-  });
 });
-
-/////// lay cac to da packed //////////////
-app.get("/TO_orders/status/:trangThai", (req, res) => {
-  const trangthai = req.params.trangThai;
-
-  db.query(
-    "SELECT * FROM TO_orders WHERE trangThai = ?", [trangthai], (err, result) => {
-    if (err) {
-      console.log("DB ERROR:", err);
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(result);
-  });
 });
-
-
 ////////////////////////////////////////////////////////// PORT Railway //////////////////////////////////////////////////////////////
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
