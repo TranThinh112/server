@@ -83,70 +83,41 @@ app.get("/test", (req, res) => {
   });
 });
 
-///////////////////////////////////////////////testr ////////////////////////////////
+//upload 3 loai: trangThai. timepacke. maTO
 app.put('/orders/:id', (req, res) => {
   const { id } = req.params;
 
-  const allowedFields = ['trangThai', 'thoiGianDongBao', 'maTO'];
-  let updateData = {};
+  const allowed = ['trangThai', 'thoiGianDongBao', 'maTO'];
 
-  // lọc field hợp lệ
-  for (let key of allowedFields) {
-    if (req.body[key] !== undefined) {
-      updateData[key] = req.body[key];
-    }
+  const data = Object.fromEntries(
+    Object.entries(req.body).filter(([k]) => allowed.includes(k))
+  );
+
+  if (!Object.keys(data).length) {
+    return res.status(400).json({ message: "No valid fields" });
   }
 
-  // không có gì để update
-  if (Object.keys(updateData).length === 0) {
-    return res.status(400).json({
-      message: "No valid fields to update"
-    });
-  }
+  const fields = Object.keys(data).map(k => `${k}=?`).join(', ');
+  const values = [...Object.values(data), id];
 
-  // build query động
-  const fields = Object.keys(updateData)
-    .map(key => `${key} = ?`)
-    .join(', ');
+  db.query(
+    `UPDATE orders SET ${fields} WHERE id=?`,
+    values,
+    (err, result) => {
+      if (err) return res.status(500).json({ message: err.message });
+      if (!result.affectedRows)
+        return res.status(404).json({ message: "Order not found" });
 
-  const values = Object.values(updateData);
-
-  const sql = `
-    UPDATE orders
-    SET ${fields}
-    WHERE id = ?
-  `;
-
-  // 🔥 UPDATE
-  db.query(sql, [...values, id], (err, result) => {
-    if (err) {
-      console.error("UPDATE ERROR:", err);
-      return res.status(500).json({
-        message: err.message
-      });
-    }
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        message: "Order not found"
-      });
-    }
-
-    // 🔥 SELECT lại dữ liệu
-    db.query(
-      "SELECT * FROM orders WHERE id = ?",
-      [id],
-      (err2, rows) => {
-        if (err2) {
-          console.error("SELECT ERROR:", err2);
-          return res.status(500).json({
-            message: err2.message
-          });
+      db.query(
+        "SELECT * FROM orders WHERE id=?",
+        [id],
+        (err2, rows) => {
+          if (err2) return res.status(500).json({ message: err2.message });
+          res.json(rows[0]);
         }
-
-        return res.json(rows[0]);
-      }
-    );
-  });
+      );
+    }
+  );
 });
 
 ////////////////////////////////////////////////// update trang thai order ///////////////////////////////////////
