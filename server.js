@@ -31,9 +31,11 @@ app.get("/orders", (req, res) => {
     res.json(result);
   });
 });
-////////////////////////////////// lấy order theo id ///////////////////////////////
+////////////////////////////////// lấy order theo id, lay order theo trạng thái ///////////////////////////////
 app.get('/orders', (req, res) => {
   const { id, trangThai } = req.query;
+
+  console.log("Query params:", req.query);
 
   let sql = "SELECT * FROM orders";
   let values = [];
@@ -42,19 +44,18 @@ app.get('/orders', (req, res) => {
     sql += " WHERE id = ?";
     values.push(id);
   } else if (trangThai) {
-    sql += " WHERE trangThai = ?";
+    sql += " WHERE LOWER(trangThai) = LOWER(?)";
     values.push(trangThai);
   }
+
+  console.log("SQL:", sql);
+  console.log("Values:", values);
 
   db.query(sql, values, (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
 
-    // nếu tìm theo id → trả 1 object
-    if (id) {
-      return res.json(result[0] || null);
-    }
+    if (id) return res.json(result[0] || null);
 
-    // còn lại → trả list
     res.json(result);
   });
 });
@@ -326,6 +327,33 @@ app.put("/TO_orders/:maTO", (req, res) => {
   );
 });
 
+//test
+// app.get('/orders', (req, res) => {
+//   const { id, trangThai } = req.query;
+
+//   let sql = "SELECT * FROM orders";
+//   let values = [];
+
+//   if (id) {
+//     sql += " WHERE id = ?";
+//     values.push(id);
+//   } else if (trangThai) {
+//     sql += " WHERE trangThai = ?";
+//     values.push(trangThai);
+//   }
+
+//   db.query(sql, values, (err, result) => {
+//     if (err) return res.status(500).json({ error: err.message });
+
+//     // nếu tìm theo id → trả 1 object
+//     if (id) {
+//       return res.json(result[0] || null);
+//     }
+
+//     // còn lại → trả list
+//     res.json(result);
+//   });
+// });
 //lay all TO
 app.get("/TO_orders", (req, res) => {
   db.query("SELECT * FROM TO_orders", (err, result) => {
