@@ -84,61 +84,69 @@ app.get("/test", (req, res) => {
 });
 
 ///////////////////////////////////////////////testr ////////////////////////////////
-app.put('/orders/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
+app.put('/orders/:id', (req, res) => {
+  const { id } = req.params;
 
-    const allowedFields = ['trangThai', 'thoiGianDongBao', 'maTO'];
-    let updateData = {};
+  const allowedFields = ['trangThai', 'thoiGianDongBao', 'maTO'];
+  let updateData = {};
 
-    // lọc field hợp lệ
-    for (let key of allowedFields) {
-      if (req.body[key] !== undefined) {
-        updateData[key] = req.body[key];
-      }
+  // lọc field hợp lệ
+  for (let key of allowedFields) {
+    if (req.body[key] !== undefined) {
+      updateData[key] = req.body[key];
     }
+  }
 
-    // không có gì để update
-    if (Object.keys(updateData).length === 0) {
-      return res.status(400).json({
-        message: "No valid fields to update"
+  // không có gì để update
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({
+      message: "No valid fields to update"
+    });
+  }
+
+  // build query động
+  const fields = Object.keys(updateData)
+    .map(key => `${key} = ?`)
+    .join(', ');
+
+  const values = Object.values(updateData);
+
+  const sql = `
+    UPDATE orders
+    SET ${fields}
+    WHERE id = ?
+  `;
+
+  // 🔥 UPDATE
+  db.query(sql, [...values, id], (err, result) => {
+    if (err) {
+      console.error("UPDATE ERROR:", err);
+      return res.status(500).json({
+        message: err.message
       });
     }
-
-    // build query động
-    const fields = Object.keys(updateData)
-      .map(key => `${key} = ?`)
-      .join(', ');
-
-    const values = Object.values(updateData);
-
-    // 🔥 UPDATE
-    const sql = `
-      UPDATE orders
-      SET ${fields}
-      WHERE id = ?
-    `;
-
-    const [result] = await db.execute(sql, [...values, id]);
-
     if (result.affectedRows === 0) {
       return res.status(404).json({
         message: "Order not found"
       });
     }
 
-    // 🔥 lấy lại dữ liệu sau update
-    const [rows] = await db.execute(
-      `SELECT * FROM orders WHERE id = ?`,
-      [id]
+    // 🔥 SELECT lại dữ liệu
+    db.query(
+      "SELECT * FROM orders WHERE id = ?",
+      [id],
+      (err2, rows) => {
+        if (err2) {
+          console.error("SELECT ERROR:", err2);
+          return res.status(500).json({
+            message: err2.message
+          });
+        }
+
+        return res.json(rows[0]);
+      }
     );
-    return res.json(rows[0]);
-  } catch (err) {
-    console.error("ERROR:", err);
-    return res.status(500).json({
-      message: "Internal Server Error"
-    });
-  }
+  });
 });
 
 ////////////////////////////////////////////////// update trang thai order ///////////////////////////////////////
