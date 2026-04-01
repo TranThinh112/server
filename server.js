@@ -88,7 +88,7 @@ app.get('/orders', (req, res) => {
     LIMIT ? OFFSET ?`;
 
   const dataValues = [...values, limit, offset];
-
+  console.log(id, trangThai, keyword, page, limit);
   db.query(countSql, values, (err, countResult) => {
     if (err) return res.status(500).json({ error: err.message });
 
