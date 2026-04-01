@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
 // });
 ////////////////////////////////// lấy order theo id, lay order theo trạng thái ///////////////////////////////
 app.get('/orders', (req, res) => {
-  let { id, trangThai, page = 1, limit = 10 } = req.query;
+  let { id, trangThai, keyword, page = 1, limit = 10 } = req.query;
 
   page = Number(page);
   limit = Number(limit);
@@ -55,18 +55,38 @@ app.get('/orders', (req, res) => {
     values.push(trangThai);
   }
 
+  /// 🔥 SEARCH toàn bộ đơn (theo id + nơi nhận)
+  if (keyword) {
+    conditions.push("(LOWER(id) LIKE LOWER(?) OR LOWER(noinhan) LIKE LOWER(?) OR LOWER(trangThai) LIKE LOWER(?))");
+    values.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
+  }
+
   /// 🔹 WHERE
   if (conditions.length > 0) {
     baseSql += " WHERE " + conditions.join(" AND ");
   }
-  /// 🔥 query tổng số đơn
+
+  /// 🔥 COUNT tổng
   const countSql = "SELECT COUNT(*) as total " + baseSql;
-  /// 🔥 query data (có pagination)
-  const dataSql = "SELECT * " + baseSql + " LIMIT ? OFFSET ?";
+
+  /// 🔥 DATA + SORT + PAGINATION
+  const dataSql = `
+    SELECT * ${baseSql}
+    ORDER BY 
+      CASE 
+        WHEN LOWER(trangThai) = 'inbound' THEN 0
+        WHEN LOWER(trangThai) = 'outbound' THEN 1
+        ELSE 2
+      END,
+      thoigiantao DESC
+    LIMIT ? OFFSET ?
+  `;
+
   const dataValues = [...values, limit, offset];
 
   console.log("COUNT SQL:", countSql);
   console.log("DATA SQL:", dataSql);
+  console.log("VALUES:", values);
 
   db.query(countSql, values, (err, countResult) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -82,7 +102,7 @@ app.get('/orders', (req, res) => {
         });
       }
 
-      /// 🔥 trả cả data + total
+      /// 🔥 trả data + total
       res.json({
         data: dataResult,
         total: countResult[0].total
@@ -90,7 +110,6 @@ app.get('/orders', (req, res) => {
     });
   });
 });
-
 
 //// tets sql 
 // ❌ API login dễ dính SQLi
