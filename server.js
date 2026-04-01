@@ -84,7 +84,7 @@ app.get('/orders', (req, res) => {
         WHEN LOWER(trangThai) = 'outbound' THEN 1
         ELSE 2
       END,
-      thoigiantao DESC
+      thoiGianDongBao DESC
     LIMIT ? OFFSET ?`;
 
   const dataValues = [...values, limit, offset];
