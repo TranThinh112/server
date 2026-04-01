@@ -55,7 +55,7 @@ app.get('/orders', (req, res) => {
     values.push(trangThai);
   }
 
-  /// 🔥 SEARCH toàn bộ đơn (theo id + nơi nhận)
+  /// 🔹 search
   if (keyword) {
     conditions.push("(LOWER(id) LIKE LOWER(?) OR LOWER(noinhan) LIKE LOWER(?) OR LOWER(trangThai) LIKE LOWER(?))");
     values.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
@@ -66,10 +66,16 @@ app.get('/orders', (req, res) => {
     baseSql += " WHERE " + conditions.join(" AND ");
   }
 
-  /// 🔥 COUNT tổng
+  /// 🔥 tổng đơn
   const countSql = "SELECT COUNT(*) as total " + baseSql;
 
-  /// 🔥 DATA + SORT + PAGINATION
+  /// 🔥 tổng inbound (KHÔNG phụ thuộc filter)
+  const inboundSql = `
+    SELECT COUNT(*) as inbound 
+    FROM orders 
+    WHERE LOWER(trangThai) = 'inbound'`;
+
+  /// 🔥 data
   const dataSql = `
     SELECT * ${baseSql}
     ORDER BY 
@@ -79,33 +85,24 @@ app.get('/orders', (req, res) => {
         ELSE 2
       END,
       thoigiantao DESC
-    LIMIT ? OFFSET ?
-  `;
+    LIMIT ? OFFSET ?`;
 
   const dataValues = [...values, limit, offset];
-
-  console.log("COUNT SQL:", countSql);
-  console.log("DATA SQL:", dataSql);
-  console.log("VALUES:", values);
 
   db.query(countSql, values, (err, countResult) => {
     if (err) return res.status(500).json({ error: err.message });
 
-    db.query(dataSql, dataValues, (err, dataResult) => {
+    db.query(inboundSql, (err, inboundResult) => {
       if (err) return res.status(500).json({ error: err.message });
 
-      /// 🔹 nếu tìm theo id
-      if (id) {
-        return res.json({
-          data: dataResult[0] || null,
-          total: countResult[0].total
-        });
-      }
+      db.query(dataSql, dataValues, (err, dataResult) => {
+        if (err) return res.status(500).json({ error: err.message });
 
-      /// 🔥 trả data + total
-      res.json({
-        data: dataResult,
-        total: countResult[0].total
+        res.json({
+          data: dataResult,
+          total: countResult[0].total,
+          inbound: inboundResult[0].inbound // 🔥 thêm dòng này
+        });
       });
     });
   });
