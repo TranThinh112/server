@@ -66,16 +66,16 @@ app.get('/orders', (req, res) => {
     baseSql += " WHERE " + conditions.join(" AND ");
   }
 
-  /// 🔥 tổng đơn
+  ///  tổng đơn
   const countSql = "SELECT COUNT(*) as total " + baseSql;
 
-  /// 🔥 tổng inbound (KHÔNG phụ thuộc filter)
+  /// tổng inbound (KHÔNG phụ thuộc filter)
   const inboundSql = `
     SELECT COUNT(*) as inbound 
     FROM orders 
     WHERE LOWER(trangThai) = 'inbound'`;
 
-  /// 🔥 data
+  /// data
   const dataSql = `
     SELECT * ${baseSql}
     ORDER BY 
@@ -381,14 +381,14 @@ app.get("/TO_orders", (req, res) => {
   let sql = "SELECT * FROM TO_orders";
   let values = [];
   if (maTO){
-    sql += "where maTO=?";
+    sql += " WHERE maTO = ?";
     values.push(maTO);
   }
   else if (trangThai) {
     sql += " WHERE LOWER(trangThai) = LOWER(?)";
     values.push(trangThai);
   }
-
+  console.log(maTO);
  db.query(sql, values, (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(result);
