@@ -376,12 +376,15 @@ app.put("/TO_orders/:maTO", (req, res) => {
 
 /////////////////////////////////lay all TO va lay TO theo trang thai /////////////////////////
 app.get("/TO_orders", (req, res) => {
-  const {trangThai} = req.query;
+  const {maTO, trangThai} = req.query;
 
   let sql = "SELECT * FROM TO_orders";
   let values = [];
-
-  if (trangThai) {
+  if (maTO){
+    sql += "where maTO=?";
+    values.push(maTO);
+  }
+  else if (trangThai) {
     sql += " WHERE LOWER(trangThai) = LOWER(?)";
     values.push(trangThai);
   }
@@ -392,31 +395,7 @@ app.get("/TO_orders", (req, res) => {
 });
 });
 
-//test
-app.get('/orders', (req, res) => {
-  const { id, trangThai } = req.query;
 
-  console.log("Query params:", req.query);
-
-  let sql = "SELECT * FROM orders";
-  let values = [];
-
-  if (id) {
-    sql += " WHERE id = ?";
-    values.push(id);
-  } else if (trangThai) {
-    sql += " WHERE LOWER(trangThai) = LOWER(?)";
-    values.push(trangThai);
-  }
-
-  db.query(sql, values, (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
-
-    if (id) return res.json(result[0] || null);
-
-    res.json(result);
-  });
-});
 ////////////////////////////////////////////////////////// PORT Railway //////////////////////////////////////////////////////////////
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
