@@ -39,9 +39,7 @@ app.get('/orders', (req, res) => {
   limit = Number(limit);
   const offset = (page - 1) * limit;
 
-  console.log("Query params:", req.query);
-
-  let sql = "SELECT * FROM orders";
+  let baseSql = "FROM orders";
   let values = [];
   let conditions = [];
 
@@ -50,29 +48,46 @@ app.get('/orders', (req, res) => {
     conditions.push("id = ?");
     values.push(id);
   }
+
   /// 🔹 lọc theo trạng thái
   if (trangThai) {
     conditions.push("LOWER(trangThai) = LOWER(?)");
     values.push(trangThai);
   }
-  /// 🔹 nếu có điều kiện → thêm WHERE
+
+  /// 🔹 WHERE
   if (conditions.length > 0) {
-    sql += " WHERE " + conditions.join(" AND ");
+    baseSql += " WHERE " + conditions.join(" AND ");
   }
-  /// 🔹 thêm pagination
-  sql += " LIMIT ? OFFSET ?";
-  values.push(limit, offset);
+  /// 🔥 query tổng số đơn
+  const countSql = "SELECT COUNT(*) as total " + baseSql;
+  /// 🔥 query data (có pagination)
+  const dataSql = "SELECT * " + baseSql + " LIMIT ? OFFSET ?";
+  const dataValues = [...values, limit, offset];
 
-  console.log("SQL:", sql);
-  console.log("Values:", values);
+  console.log("COUNT SQL:", countSql);
+  console.log("DATA SQL:", dataSql);
 
-  db.query(sql, values, (err, result) => {
+  db.query(countSql, values, (err, countResult) => {
     if (err) return res.status(500).json({ error: err.message });
 
-    /// nếu tìm theo id → trả 1 object
-    if (id) return res.json(result[0] || null);
+    db.query(dataSql, dataValues, (err, dataResult) => {
+      if (err) return res.status(500).json({ error: err.message });
 
-    res.json(result);
+      /// 🔹 nếu tìm theo id
+      if (id) {
+        return res.json({
+          data: dataResult[0] || null,
+          total: countResult[0].total
+        });
+      }
+
+      /// 🔥 trả cả data + total
+      res.json({
+        data: dataResult,
+        total: countResult[0].total
+      });
+    });
   });
 });
 
