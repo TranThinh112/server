@@ -263,7 +263,7 @@ function handleUser(req, res) {
 }
 
 // cập nhật mật khẩu user theo username
-app.put("/login/users/:username", (req, res) => {
+app.put("/repass/users/:username", (req, res) => {
   const username = req.params.username;
   const { password } = req.body;
 
