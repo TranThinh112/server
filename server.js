@@ -238,10 +238,11 @@ app.get("/login/users", (req, res) => {
 
 
 // tìm user
-app.get("/login/users/:username", handleUser);
-
 // 🔐 login
 app.get("/login/users/:username/:password", handleUser);
+//tim user theo username
+app.get("/login/users/:username", handleUser);
+
 
 //  dùng chung logic
 function handleUser(req, res) {
