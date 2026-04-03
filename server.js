@@ -21,16 +21,6 @@ app.get("/", (req, res) => {
   res.send("API is running 🚀");
 });
 
-// // lay toan bo order
-// app.get("/orders", (req, res) => {
-//   db.query("SELECT * FROM orders", (err, result) => {
-//     if (err) {
-//       console.log("DB ERROR:", err);
-//       return res.status(500).json({ error: err.message });
-//     }
-//     res.json(result);
-//   });
-// });
 ////////////////////////////////// lấy order theo id, lay order theo trạng thái ///////////////////////////////
 app.get('/orders', (req, res) => {
   let { id, trangThai, keyword, page = 1, limit = 10 } = req.query;
@@ -198,11 +188,12 @@ app.post("/TO_orders", (req, res) => {
 });
 //tao order moi tu form
 app.post("/orders",(req,res)=> {
-  const {id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien, trangThai,  thoiGianTao, thoiGianDongBao, maTO  } = req.body;
+  const {id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien } = req.body;
 
   db.query(
-    'INSERT INTO orders(id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien, trangThai, thoiGianTao, thoiGianDongBao, maTO) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-    [id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien, trangThai, thoiGianTao, thoiGianDongBao, maTO],
+    'INSERT INTO orders(id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien, ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+
+    [id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien],
     (err, result) =>{
      if (err){
       console.log("DB error:", err);
