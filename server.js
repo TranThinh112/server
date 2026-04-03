@@ -191,7 +191,7 @@ app.post("/orders",(req,res)=> {
   const {id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien } = req.body;
 
   db.query(
-    'INSERT INTO orders(id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien, ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+    'INSERT INTO orders(id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien, ) VALUES(?,?,?,?,?,?,?,?,?,?)',
 
     [id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien],
     (err, result) =>{
