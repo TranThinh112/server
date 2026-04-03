@@ -161,13 +161,48 @@ app.put('/orders/:id', (req, res) => {
     }
   );
 });
+app.post("/TO_orders", (req, res) => {
+  const {
+    maTO,
+    danhSachGoiHang,
+    diaDiemGiaoHang,
+    trangThai,
+    packer,
+    totalWeight,
+    ngayTao,
+    completeTime
+  } = req.body;
 
+  db.query(
+    `INSERT INTO TO_orders 
+    (maTO, danhSachGoiHang, diaDiemGiaoHang, trangThai, packer, totalWeight, ngayTao, completeTime)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      maTO,
+      JSON.stringify(danhSachGoiHang), // 🔥 convert list → string
+      diaDiemGiaoHang,
+      trangThai,
+      packer,
+      totalWeight,
+      ngayTao,
+      completeTime
+    ],
+    (err, result) => {
+      if (err) {
+        console.log("DB ERROR:", err);
+        return res.status(500).json(err);
+      }
+      res.json({ success: true});
+    }
+  );
+});
 //tao order moi tu form
 app.post("/orders",(req,res)=> {
-  const {id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien}=req.body;
+  const {id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien, trangThai,  thoiGianTao, thoiGianDongBao, maTO  } = req.body;
+
   db.query(
-    'INSERT INTO orders(id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien) VALUES(?,?,?,?,?,?,?,?,?,?)',
-    [id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien],
+    'INSERT INTO orders(id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien, trangThai, thoiGianTao, thoiGianDongBao, maTO) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+    [id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien, trangThai, thoiGianTao, thoiGianDongBao, maTO],
     (err, result) =>{
      if (err){
       console.log("DB error:", err);
