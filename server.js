@@ -121,13 +121,14 @@ app.post('/orders/:id/scan', (req, res) => {
 
   const now = new Date();
 
-  // 1. Lấy thông tin đơn (để lấy khối lượng)
+  // 1. Lấy thông tin đơn
   db.query(
     "SELECT khoiLuong FROM orders WHERE id = ?",
     [id],
     (err, rows) => {
       if (err) return res.status(500).json(err);
-      if (!rows.length) return res.status(404).json({ message: "Không tìm thấy đơn" });
+      if (!rows.length)
+        return res.status(404).json({ message: "Không tìm thấy đơn" });
 
       const khoiLuong = rows[0].khoiLuong;
 
@@ -152,12 +153,21 @@ app.post('/orders/:id/scan', (req, res) => {
             [maTO],
             (err3, rows2) => {
               if (err3) return res.status(500).json(err3);
+              if (!rows2.length)
+                return res.status(404).json({ message: "TO không tồn tại" });
 
               let list = [];
               try {
                 list = JSON.parse(rows2[0].danhSachGoiHang || "[]");
               } catch {
                 list = [];
+              }
+
+              // ❗ tránh trùng đơn
+              if (list.some(item => item.orderId == id)) {
+                return res.status(400).json({
+                  message: "Đơn đã tồn tại trong TO"
+                });
               }
 
               // 4. Thêm object mới
@@ -167,14 +177,20 @@ app.post('/orders/:id/scan', (req, res) => {
                 thoiGianScan: now
               });
 
-              // 5. Update lại TO
+              // 5. Update TO: vừa update list vừa cộng weight
               db.query(
-                "UPDATE TO_orders SET danhSachGoiHang = ? WHERE maTO = ?",
-                [JSON.stringify(list), maTO],
+                `UPDATE TO_orders 
+                 SET danhSachGoiHang = ?, 
+                     totalWeight = totalWeight + ?
+                 WHERE maTO = ?`,
+                [JSON.stringify(list), khoiLuong, maTO],
                 (err4) => {
                   if (err4) return res.status(500).json(err4);
 
-                  res.json({ success: true });
+                  res.json({
+                    success: true,
+                    addedWeight: khoiLuong
+                  });
                 }
               );
             }
@@ -188,41 +204,72 @@ app.post('/orders/:id/scan', (req, res) => {
 app.post('/orders/:id/remove', (req, res) => {
   const { id } = req.params;
 
+  // 1. Lấy thông tin đơn
   db.query(
-    "SELECT maTO FROM orders WHERE id = ?",
+    "SELECT maTO, khoiLuong FROM orders WHERE id = ?",
     [id],
     (err, rows) => {
       if (err) return res.status(500).json(err);
+      if (!rows.length)
+        return res.status(404).json({ message: "Không tìm thấy đơn" });
 
-      const maTO = rows[0].maTO;
+      const { maTO, khoiLuong } = rows[0];
 
-      // 1. Update order
+      if (!maTO) {
+        return res.status(400).json({
+          message: "Đơn chưa thuộc TO"
+        });
+      }
+
+      // 2. Lấy danh sách hiện tại của TO
       db.query(
-        `UPDATE orders 
-         SET trangThai = 'Outbound', maTO = NULL, thoiGianDongBao = NULL
-         WHERE id = ?`,
-        [id],
-        (err2) => {
+        "SELECT danhSachGoiHang FROM TO_orders WHERE maTO = ?",
+        [maTO],
+        (err2, rows2) => {
           if (err2) return res.status(500).json(err2);
+          if (!rows2.length)
+            return res.status(404).json({ message: "TO không tồn tại" });
 
-          // 2. Update list
+          let list = [];
+          try {
+            list = JSON.parse(rows2[0].danhSachGoiHang || "[]");
+          } catch {
+            list = [];
+          }
+
+          // ❗ check đơn có trong list không
+          const exists = list.some(item => item.orderId == id);
+          if (!exists) {
+            return res.status(400).json({
+              message: "Đơn không nằm trong TO"
+            });
+          }
+          // 3. Xóa khỏi list
+          list = list.filter(item => item.orderId != id);
+
+          // 4. Update TO (trừ weight + update list)
           db.query(
-            "SELECT danhSachGoiHang FROM TO_orders WHERE maTO = ?",
-            [maTO],
-            (err3, rows2) => {
+            `UPDATE TO_orders 
+             SET danhSachGoiHang = ?, 
+                 totalWeight = totalWeight - ?
+             WHERE maTO = ?`,
+            [JSON.stringify(list), khoiLuong, maTO],
+            (err3) => {
               if (err3) return res.status(500).json(err3);
 
-              let list = JSON.parse(rows2[0].danhSachGoiHang || "[]");
-
-              list = list.filter(item => item.orderId != id);
-
+              // 5. Update order
               db.query(
-                "UPDATE TO_orders SET danhSachGoiHang = ? WHERE maTO = ?",
-                [JSON.stringify(list), maTO],
+                `UPDATE orders 
+                 SET trangThai = 'Outbound', maTO = NULL, thoiGianDongBao = NULL
+                 WHERE id = ?`,
+                [id],
                 (err4) => {
                   if (err4) return res.status(500).json(err4);
 
-                  res.json({ success: true });
+                  res.json({
+                    success: true,
+                    removedWeight: khoiLuong
+                  });
                 }
               );
             }
