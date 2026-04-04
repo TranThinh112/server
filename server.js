@@ -116,8 +116,8 @@ app.get('/orders', (req, res) => {
 // });
 
 //update trangThai = 'Inbound' + maTO + thoiGianDongBao khi scan
-app.post('/orders/:id/scan', (req, res) => {
-  const { id } = req.params;
+app.post('orders/scan', (req, res) => {
+  const { id } = req.query;
   const { maTO } = req.body;
 
   const now = new Date();
@@ -148,7 +148,6 @@ app.post('/orders/:id/scan', (req, res) => {
               message: "Đơn đã scan hoặc không hợp lệ"
             });
           }
-
           // 3. Lấy danh sách hiện tại của TO
           db.query(
             "SELECT danhSachGoiHang FROM TO_orders WHERE maTO = ?",
@@ -210,8 +209,8 @@ app.post('/orders/:id/scan', (req, res) => {
   );
 });
 //xoa don khoi TO (trangThai = 'Outbound' + maTO = null + thoiGianDongBao = null)
-app.post('/orders/:id/remove', (req, res) => {
-  const { id } = req.params;
+app.post('orders/remove', (req, res) => {
+  const { id } = req.query;
 
   // 1. Lấy thông tin đơn
   db.query(
@@ -296,41 +295,41 @@ app.post('/orders/:id/remove', (req, res) => {
   );
 });
 //upload 3 loai: trangThai. timepacke. maTO
-app.put('/orders/:id', (req, res) => {
-  const { id } = req.params;
+// app.put('/orders/:id', (req, res) => {
+//   const { id } = req.params;
 
-  const allowed = ['trangThai', 'thoiGianDongBao', 'maTO'];
+//   const allowed = ['trangThai', 'thoiGianDongBao', 'maTO'];
 
-  const data = Object.fromEntries(
-    Object.entries(req.body).filter(([k]) => allowed.includes(k))
-  );
+//   const data = Object.fromEntries(
+//     Object.entries(req.body).filter(([k]) => allowed.includes(k))
+//   );
 
-  if (!Object.keys(data).length) {
-    return res.status(400).json({ message: "No valid fields" });
-  }
+//   if (!Object.keys(data).length) {
+//     return res.status(400).json({ message: "No valid fields" });
+//   }
 
-  const fields = Object.keys(data).map(k => `${k}=?`).join(', ');
-  const values = [...Object.values(data), id];
+//   const fields = Object.keys(data).map(k => `${k}=?`).join(', ');
+//   const values = [...Object.values(data), id];
 
-  db.query(
-    `UPDATE orders SET ${fields} WHERE id=?`,
-    values,
-    (err, result) => {
-      if (err) return res.status(500).json({ message: err.message });
-      if (!result.affectedRows)
-        return res.status(404).json({ message: "Order not found" });
+//   db.query(
+//     `UPDATE orders SET ${fields} WHERE id=?`,
+//     values,
+//     (err, result) => {
+//       if (err) return res.status(500).json({ message: err.message });
+//       if (!result.affectedRows)
+//         return res.status(404).json({ message: "Order not found" });
 
-      db.query(
-        "SELECT * FROM orders WHERE id=?",
-        [id],
-        (err2, rows) => {
-          if (err2) return res.status(500).json({ message: err2.message });
-          res.json(rows[0]);
-        }
-      );
-    }
-  );
-});
+//       db.query(
+//         "SELECT * FROM orders WHERE id=?",
+//         [id],
+//         (err2, rows) => {
+//           if (err2) return res.status(500).json({ message: err2.message });
+//           res.json(rows[0]);
+//         }
+//       );
+//     }
+//   );
+// });
 
 
 //tao order moi tu form
