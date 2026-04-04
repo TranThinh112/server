@@ -123,14 +123,14 @@ app.post('/orders/:id/scan', (req, res) => {
 
   // 1. Lấy thông tin đơn
   db.query(
-    "SELECT khoiLuong FROM orders WHERE id = ?",
+    "SELECT soKi FROM orders WHERE id = ?",
     [id],
     (err, rows) => {
       if (err) return res.status(500).json(err);
       if (!rows.length)
         return res.status(404).json({ message: "Không tìm thấy đơn" });
 
-      const khoiLuong = rows[0].khoiLuong;
+      const soKi = rows[0].soKi;
 
       // 2. Update order
       db.query(
@@ -173,7 +173,7 @@ app.post('/orders/:id/scan', (req, res) => {
               // 4. Thêm object mới
               list.push({
                 orderId: id,
-                khoiLuong: khoiLuong,
+                soKi: soKi,
                 thoiGianScan: now
               });
 
@@ -183,13 +183,13 @@ app.post('/orders/:id/scan', (req, res) => {
                  SET danhSachGoiHang = ?, 
                      totalWeight = totalWeight + ?
                  WHERE maTO = ?`,
-                [JSON.stringify(list), khoiLuong, maTO],
+                [JSON.stringify(list), soKi, maTO],
                 (err4) => {
                   if (err4) return res.status(500).json(err4);
 
                   res.json({
                     success: true,
-                    addedWeight: khoiLuong
+                    addedWeight: soKi
                   });
                 }
               );
@@ -206,14 +206,14 @@ app.post('/orders/:id/remove', (req, res) => {
 
   // 1. Lấy thông tin đơn
   db.query(
-    "SELECT maTO, khoiLuong FROM orders WHERE id = ?",
+    "SELECT maTO, soKi FROM orders WHERE id = ?",
     [id],
     (err, rows) => {
       if (err) return res.status(500).json(err);
       if (!rows.length)
         return res.status(404).json({ message: "Không tìm thấy đơn" });
 
-      const { maTO, khoiLuong } = rows[0];
+      const { maTO, soKi } = rows[0];
 
       if (!maTO) {
         return res.status(400).json({
@@ -253,7 +253,7 @@ app.post('/orders/:id/remove', (req, res) => {
              SET danhSachGoiHang = ?, 
                  totalWeight = totalWeight - ?
              WHERE maTO = ?`,
-            [JSON.stringify(list), khoiLuong, maTO],
+            [JSON.stringify(list), soKi, maTO],
             (err3) => {
               if (err3) return res.status(500).json(err3);
 
@@ -268,7 +268,7 @@ app.post('/orders/:id/remove', (req, res) => {
 
                   res.json({
                     success: true,
-                    removedWeight: khoiLuong
+                    removedWeight: soKi
                   });
                 }
               );
