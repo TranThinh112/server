@@ -114,7 +114,53 @@ app.get('/orders', (req, res) => {
 //     res.json(result);
 //   });
 // });
+//update trangThai = 'Inbound' + maTO + thoiGianDongBao khi scan
+app.post('/orders/:id/scan', (req, res) => {
+  const { id } = req.params;
+  const { maTO } = req.body;
 
+  const now = new Date();
+
+  db.query(
+    `UPDATE orders 
+     SET trangThai = 'Inbound', maTO = ?, thoiGianDongBao = ?
+     WHERE id = ? AND trangThai = 'Outbound'`,
+    [maTO, now, id],
+    (err, result) => {
+      if (err) return res.status(500).json(err);
+
+      if (result.affectedRows === 0) {
+        return res.status(400).json({
+          message: "Đơn không tồn tại hoặc đã scan rồi"
+        });
+      }
+
+      res.json({ success: true });
+    }
+  );
+});
+//xoa don khoi TO (trangThai = 'Outbound' + maTO = null + thoiGianDongBao = null)
+app.post('/orders/:id/remove-from-to', (req, res) => {
+  const { id } = req.params;
+
+  db.query(
+    `UPDATE orders 
+     SET trangThai = 'Outbound', maTO = NULL, thoiGianDongBao = NULL
+     WHERE id = ? AND trangThai = 'Inbound'`,
+    [id],
+    (err, result) => {
+      if (err) return res.status(500).json(err);
+
+      if (result.affectedRows === 0) {
+        return res.status(400).json({
+          message: "Đơn không hợp lệ hoặc chưa thuộc TO"
+        });
+      }
+
+      res.json({ success: true });
+    }
+  );
+});
 //upload 3 loai: trangThai. timepacke. maTO
 app.put('/orders/:id', (req, res) => {
   const { id } = req.params;
