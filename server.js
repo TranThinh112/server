@@ -266,16 +266,15 @@ app.post('/orders/scanlan2/:id', (req, res) => {
 app.post('/orders/remove/:id', (req, res) => {
   const { id } = req.params;
 
-  // 1. Lấy thông tin đơn
   db.query(
-    "SELECT maTO, soKi FROM orders WHERE id = ?",
+    "SELECT maTO FROM orders WHERE id = ?",
     [id],
     (err, rows) => {
       if (err) return res.status(500).json(err);
       if (!rows.length)
         return res.status(404).json({ message: "Không tìm thấy đơn" });
 
-      const { maTO,  } = rows[0];
+      const { maTO } = rows[0];
 
       if (!maTO) {
         return res.status(400).json({
@@ -283,71 +282,72 @@ app.post('/orders/remove/:id', (req, res) => {
         });
       }
 
-      // 2. Lấy danh sách hiện tại của TO
       db.query(
         "SELECT danhSachGoiHang FROM TO_orders WHERE maTO = ?",
         [maTO],
         (err2, rows2) => {
           if (err2) return res.status(500).json(err2);
-          if (!rows2 || rows2.length === 0)
+          if (!rows2.length)
             return res.status(404).json({ message: "TO không tồn tại" });
 
           let list = [];
+
           try {
-          const raw = rows2[0].danhSachGoiHang;
+            let raw = rows2[0].danhSachGoiHang;
 
-          if (!raw || raw.trim() === "") {
+            if (Buffer.isBuffer(raw)) raw = raw.toString();
+
+            list = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(list)) list = [];
+          } catch (e) {
+            console.log("JSON ERROR:", e);
             list = [];
-          } else {
-            list = JSON.parse(raw);
           }
-        } catch (e) {
-          console.log("JSON PARSE ERROR:", e);
-          list = [];
-        }
 
-          // ❗ check đơn có trong list không
           const index = list.findIndex(item => item.orderId == id);
+
           if (index === -1) {
             return res.status(400).json({
               message: "Đơn không nằm trong TO"
             });
           }
-          //kiem tra co phai la don dau tien khong
+
           const isFirstOrder = index === 0;
           const removed = list[index];
-          const soKi = removed?.soKi || 0;
-          // 3. Xóa khỏi list
-          list.splice(index, 1);
-        
-        if(isFirstOrder){
-          if(list.length === 0){
-            // nếu xóa đơn đầu tiên và không còn đơn nào → reset diaDiemGiaoHang
-            updateTO(null);
-          } else {
-            // nếu xóa đơn đầu tiên nhưng còn đơn khác → cập nhật diaDiemGiaoHang theo đơn mới đầu tiên
-            const newFirstOrderId = list[0].orderId;
+          const removedWeight = removed?.soKi || 0;
 
-            db.query(
-              "SELECT noiNhan FROM orders WHERE id = ?",
-              [newFirstOrderId],
-              (err3, result3) => {
-                if (err3) return res.status(500).json(err3);
-                const newDiaDiem = result3[0]?.noiNhan || null;
-                updateTO(newDiaDiem);
-              }
-            );
-           }
-          }else {
-           // nếu không xóa đơn đầu tiên → giữ nguyên diaDiemGiaoHang
-           updateTO(undefined);
+          // xoá
+          list.splice(index, 1);
+
+          // ===== xử lý =====
+          if (isFirstOrder) {
+            if (list.length === 0) {
+              return updateTO(null);
+            } else {
+              const newFirstOrderId = list[0].orderId;
+
+              return db.query(
+                "SELECT noiNhan FROM orders WHERE id = ?",
+                [newFirstOrderId],
+                (err3, result3) => {
+                  if (err3) return res.status(500).json(err3);
+
+                  const newDiaDiem = result3[0]?.noiNhan || null;
+                  updateTO(newDiaDiem);
+                }
+              );
+            }
+          } else {
+            return updateTO(undefined);
           }
-                  // 4. Update TO (trừ weight + update list)
-           function updateTO(newDiaDiem) {
+
+          // ===== update =====
+          function updateTO(newDiaDiem) {
             let sql = `
               UPDATE TO_orders 
               SET danhSachGoiHang = ?, 
-                  totalWeight = totalWeight - ?`;
+                  totalWeight = totalWeight - ?
+            `;
 
             let params = [JSON.stringify(list), removedWeight];
 
@@ -362,7 +362,6 @@ app.post('/orders/remove/:id', (req, res) => {
             db.query(sql, params, (err4) => {
               if (err4) return res.status(500).json(err4);
 
-              // update order
               db.query(
                 `UPDATE orders 
                  SET trangThai = 'Outbound', maTO = NULL, thoiGianDongBao = NULL
@@ -373,56 +372,18 @@ app.post('/orders/remove/:id', (req, res) => {
 
                   res.json({
                     success: true,
-                    removedWeight: removedWeight,
-                    list: list
+                    removedWeight,
+                    list
                   });
                 }
               );
-            }
-          );
+            });
+          }
         }
-      }
       );
     }
   );
 });
-//upload 3 loai: trangThai. timepacke. maTO
-// app.put('/orders/:id', (req, res) => {
-//   const { id } = req.params;
-
-//   const allowed = ['trangThai', 'thoiGianDongBao', 'maTO'];
-
-//   const data = Object.fromEntries(
-//     Object.entries(req.body).filter(([k]) => allowed.includes(k))
-//   );
-
-//   if (!Object.keys(data).length) {
-//     return res.status(400).json({ message: "No valid fields" });
-//   }
-
-//   const fields = Object.keys(data).map(k => `${k}=?`).join(', ');
-//   const values = [...Object.values(data), id];
-
-//   db.query(
-//     `UPDATE orders SET ${fields} WHERE id=?`,
-//     values,
-//     (err, result) => {
-//       if (err) return res.status(500).json({ message: err.message });
-//       if (!result.affectedRows)
-//         return res.status(404).json({ message: "Order not found" });
-
-//       db.query(
-//         "SELECT * FROM orders WHERE id=?",
-//         [id],
-//         (err2, rows) => {
-//           if (err2) return res.status(500).json({ message: err2.message });
-//           res.json(rows[0]);
-//         }
-//       );
-//     }
-//   );
-// });
-
 
 //tao order moi tu form
 app.post("/orders",(req,res)=> {
