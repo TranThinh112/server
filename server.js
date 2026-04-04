@@ -130,7 +130,7 @@ app.post('/orders/scan/:id', (req, res) => {
       if (err) return res.status(500).json(err);
       if (!rows.length)
         return res.status(404).json({ message: "Không tìm thấy đơn" });
-
+      console.log("buoc1 ok");
       const soKi = Number(rows[0].soKi) || 0;
       console.log("scan: ",id)
       // 2. Update order
@@ -148,6 +148,7 @@ app.post('/orders/scan/:id', (req, res) => {
               message: "Đơn đã scan hoặc không hợp lệ"
             });
           }
+          console.log("buoc2 ok");
           // 3. Lấy danh sách hiện tại của TO
           db.query(
             "SELECT danhSachGoiHang FROM TO_orders WHERE maTO = ?",
@@ -159,17 +160,20 @@ app.post('/orders/scan/:id', (req, res) => {
 
               let list = [];
                 try {
-                  const raw = rows2[0].danhSachGoiHang;
+                const raw = rows2[0].danhSachGoiHang;
 
-                  if (!raw || raw === "" || raw === "" ) {
-                    list = []; // ✅ fix
-                  } else {
-                    list = JSON.parse(raw);
-                  }
-                } catch (e) {
-                  console.log("JSON ERROR:", e);
+                if (!raw || raw.trim() === "") {
                   list = [];
+                } else {
+                  list = JSON.parse(raw);
                 }
+              } catch (e) {
+                return res.status(500).json({
+                  message: "Lỗi parse JSON danhSachGoiHang",
+                  error: e.message
+                });
+              }
+              console.log("buoc3 ok");
 
               // ❗ tránh trùng đơn
               if (list.some(item => item.orderId == id)) {
@@ -186,6 +190,8 @@ app.post('/orders/scan/:id', (req, res) => {
               });
               console.log("Updated list:", list);
 
+              console.log("buoc4 ok");
+
               // 5. Update TO: vừa update list vừa cộng weight
               db.query(
                 `UPDATE TO_orders 
@@ -200,6 +206,122 @@ app.post('/orders/scan/:id', (req, res) => {
                   res.json({
                     success: true,
                     addedWeight: soKi
+                  });
+                }
+              );
+              console.log("buoc5 ok");
+            }
+          );
+        }
+      );
+    }
+  );
+});
+//test
+app.post('/orders/scanlan2/:id', (req, res) => {
+  const { id } = req.params;
+  const { maTO } = req.body;
+
+  if (!maTO) {
+    return res.status(400).json({ message: "Thiếu maTO" });
+  }
+
+  const now = new Date();
+
+  // 1. Lấy thông tin đơn
+  db.query(
+    "SELECT soKi FROM orders WHERE TRIM(id) = ?",
+    [id],
+    (err, rows) => {
+      if (err) return res.status(500).json(err);
+      if (!rows.length)
+        return res.status(404).json({ message: "Không tìm thấy đơn" });
+
+      const soKi = Number(rows[0].soKi) || 0;
+
+      // 2. Lấy TO trước (🔥 quan trọng)
+      db.query(
+        "SELECT danhSachGoiHang FROM TO_orders WHERE TRIM(maTO) = ?",
+        [maTO],
+        (err3, rows2) => {
+          if (err3) return res.status(500).json(err3);
+          if (!rows2 || rows2.length === 0)
+            return res.status(404).json({ message: "TO không tồn tại" });
+
+          let list = [];
+
+          try {
+            let raw = rows2[0].danhSachGoiHang;
+
+            // 🔥 FIX BLOB → STRING
+            if (Buffer.isBuffer(raw)) {
+              raw = raw.toString();
+            }
+
+            if (!raw || raw.trim() === "" || raw === '""') {
+              list = [];
+            } else {
+              list = JSON.parse(raw);
+              if (!Array.isArray(list)) list = [];
+            }
+
+          } catch (e) {
+            console.log("JSON ERROR:", e);
+            list = [];
+          }
+
+          // ❗ tránh trùng TRƯỚC khi update
+          if (list.some(item => item.orderId == id)) {
+            return res.json({
+              success: true,
+              message: "Đơn đã có trong TO"
+            });
+          }
+
+          // 3. Update order
+          db.query(
+            `UPDATE orders 
+             SET trangThai = 'Inbound', maTO = ?, thoiGianDongBao = ?
+             WHERE TRIM(id) = ? AND TRIM(LOWER(trangThai)) = 'outbound'`,
+            [maTO, now, id],
+            (err2, result) => {
+              if (err2) return res.status(500).json(err2);
+
+              if (result.affectedRows === 0) {
+                return res.status(400).json({
+                  message: "Đơn không hợp lệ hoặc đã scan"
+                });
+              }
+
+              // 4. Push vào list
+              list.push({
+                orderId: id,
+                soKi: soKi,
+                thoiGianScan: now
+              });
+
+              console.log("LIST:", list);
+
+              // 5. Update TO
+              db.query(
+                `UPDATE TO_orders 
+                 SET danhSachGoiHang = ?, 
+                     totalWeight = totalWeight + ?
+                 WHERE TRIM(maTO) = ?`,
+                [JSON.stringify(list), soKi, maTO],
+                (err4, result4) => {
+                  if (err4) return res.status(500).json(err4);
+
+                  if (result4.affectedRows === 0) {
+                    return res.status(400).json({
+                      message: "Không update được TO"
+                    });
+                  }
+
+                  res.json({
+                    success: true,
+                    addedWeight: soKi,
+                    list: list
                   });
                 }
               );
