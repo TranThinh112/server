@@ -161,7 +161,7 @@ app.post('/orders/scan/:id', (req, res) => {
                 try {
                   const raw = rows2[0].danhSachGoiHang;
 
-                  if (!raw || raw.trim() === "") {
+                  if (!raw || raw === "" || raw === "" ) {
                     list = []; // ✅ fix
                   } else {
                     list = JSON.parse(raw);
@@ -184,6 +184,7 @@ app.post('/orders/scan/:id', (req, res) => {
                 soKi: soKi,
                 thoiGianScan: now
               });
+              console.log("Updated list:", list);
 
               // 5. Update TO: vừa update list vừa cộng weight
               db.query(
@@ -194,6 +195,7 @@ app.post('/orders/scan/:id', (req, res) => {
                 [JSON.stringify(list), soKi, maTO],
                 (err4) => {
                   if (err4) return res.status(500).json(err4);
+                  console.log(`Đã thêm đơn ${id} vào TO ${maTO}, cộng thêm ${soKi} kg`);
 
                   res.json({
                     success: true,
