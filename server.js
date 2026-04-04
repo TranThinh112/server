@@ -116,8 +116,8 @@ app.get('/orders', (req, res) => {
 // });
 
 //update trangThai = 'Inbound' + maTO + thoiGianDongBao khi scan
-app.post('orders/scan', (req, res) => {
-  const { id } = req.query;
+app.post('orders/scan/:id', (req, res) => {
+  const { id } = req.params;
   const { maTO } = req.body;
 
   const now = new Date();
@@ -209,8 +209,8 @@ app.post('orders/scan', (req, res) => {
   );
 });
 //xoa don khoi TO (trangThai = 'Outbound' + maTO = null + thoiGianDongBao = null)
-app.post('orders/remove', (req, res) => {
-  const { id } = req.query;
+app.post('orders/remove/:id', (req, res) => {
+  const { id } = req.params;
 
   // 1. Lấy thông tin đơn
   db.query(
