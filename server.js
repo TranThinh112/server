@@ -132,17 +132,18 @@ app.post('/orders/:id/scan', (req, res) => {
         return res.status(404).json({ message: "Không tìm thấy đơn" });
 
       const soKi = rows[0].soKi;
-
+      console.log("scan: ",id)
       // 2. Update order
       db.query(
         `UPDATE orders 
          SET trangThai = 'Inbound', maTO = ?, thoiGianDongBao = ?
-         WHERE id = ? AND trangThai = 'Outbound'`,
+         WHERE TRIM(id) = ? AND TRIM(LOWER(trangThai)) = 'outbound'`,
         [maTO, now, id],
         (err2, result) => {
           if (err2) return res.status(500).json(err2);
 
           if (result.affectedRows === 0) {
+
             return res.status(400).json({
               message: "Đơn đã scan hoặc không hợp lệ"
             });
@@ -154,7 +155,7 @@ app.post('/orders/:id/scan', (req, res) => {
             [maTO],
             (err3, rows2) => {
               if (err3) return res.status(500).json(err3);
-              if (!rows || rows2.length === 0)
+              if (!rows2 || rows2.length === 0)
                 return res.status(404).json({ message: "TO không tồn tại" });
 
               let list = [];
