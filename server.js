@@ -121,6 +121,7 @@ app.post('/orders/:id/scan', (req, res) => {
 
   const now = new Date();
 
+  // 1. Update order trước
   db.query(
     `UPDATE orders 
      SET trangThai = 'Inbound', maTO = ?, thoiGianDongBao = ?
@@ -131,33 +132,95 @@ app.post('/orders/:id/scan', (req, res) => {
 
       if (result.affectedRows === 0) {
         return res.status(400).json({
-          message: "Đơn không tồn tại hoặc đã scan rồi"
+          message: "Đơn không tồn tại hoặc đã scan"
         });
       }
+      // 2. Lấy danhSachGoiHang hiện tại
+      db.query(
+        "SELECT danhSachGoiHang FROM TO_orders WHERE maTO = ?",
+        [maTO],
+        (err2, rows) => {
+          if (err2) return res.status(500).json(err2);
 
-      res.json({ success: true });
+          if (!rows.length) {
+            return res.status(404).json({ message: "TO không tồn tại" });
+          }
+
+          let list = [];
+
+          try {
+            list = JSON.parse(rows[0].danhSachGoiHang || "[]");
+          } catch {
+            list = [];
+          }
+
+          // 3. Thêm đơn vào list (tránh trùng)
+          if (!list.includes(id)) {
+            list.push(id);
+          }
+
+          // 4. Update lại TO
+          db.query(
+            "UPDATE TO_orders SET danhSachGoiHang = ? WHERE maTO = ?",
+            [JSON.stringify(list), maTO],
+            (err3) => {
+              if (err3) return res.status(500).json(err3);
+
+              res.json({ success: true });
+            }
+          );
+        }
+      );
     }
   );
 });
 //xoa don khoi TO (trangThai = 'Outbound' + maTO = null + thoiGianDongBao = null)
-app.post('/orders/:id/remove-from-to', (req, res) => {
+app.post('/orders/:id/remove', (req, res) => {
   const { id } = req.params;
 
+  // 1. Lấy maTO trước
   db.query(
-    `UPDATE orders 
-     SET trangThai = 'Outbound', maTO = NULL, thoiGianDongBao = NULL
-     WHERE id = ? AND trangThai = 'Inbound'`,
+    "SELECT maTO FROM orders WHERE id = ?",
     [id],
-    (err, result) => {
+    (err, rows) => {
       if (err) return res.status(500).json(err);
+      if (!rows.length) return res.status(404).json({ message: "Không tìm thấy đơn" });
 
-      if (result.affectedRows === 0) {
-        return res.status(400).json({
-          message: "Đơn không hợp lệ hoặc chưa thuộc TO"
-        });
-      }
+      const maTO = rows[0].maTO;
 
-      res.json({ success: true });
+      // 2. Update order
+      db.query(
+        `UPDATE orders 
+         SET trangThai = 'Outbound', maTO = NULL, thoiGianDongBao = NULL
+         WHERE id = ?`,
+        [id],
+        (err2) => {
+          if (err2) return res.status(500).json(err2);
+
+          // 3. Update TO list
+          db.query(
+            "SELECT danhSachGoiHang FROM TO_orders WHERE maTO = ?",
+            [maTO],
+            (err3, rows2) => {
+              if (err3) return res.status(500).json(err3);
+
+              let list = JSON.parse(rows2[0].danhSachGoiHang || "[]");
+
+              list = list.filter(item => item != id);
+
+              db.query(
+                "UPDATE TO_orders SET danhSachGoiHang = ? WHERE maTO = ?",
+                [JSON.stringify(list), maTO],
+                (err4) => {
+                  if (err4) return res.status(500).json(err4);
+
+                  res.json({ success: true });
+                }
+              );
+            }
+          );
+        }
+      );
     }
   );
 });
