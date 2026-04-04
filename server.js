@@ -124,14 +124,14 @@ app.post('/orders/:id/scan', (req, res) => {
 
   // 1. Lấy thông tin đơn
   db.query(
-    "SELECT soKi FROM orders WHERE id = ?",
+    "SELECT soKi FROM orders WHERE TRIM(id) = ?",
     [id],
     (err, rows) => {
       if (err) return res.status(500).json(err);
       if (!rows.length)
         return res.status(404).json({ message: "Không tìm thấy đơn" });
 
-      const soKi = rows[0].soKi;
+      const soKi = Number(rows[0].soKi) || 0;
       console.log("scan: ",id)
       // 2. Update order
       db.query(
