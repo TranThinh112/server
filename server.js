@@ -114,6 +114,7 @@ app.get('/orders', (req, res) => {
 //     res.json(result);
 //   });
 // });
+
 //update trangThai = 'Inbound' + maTO + thoiGianDongBao khi scan
 app.post('/orders/:id/scan', (req, res) => {
   const { id } = req.params;
@@ -153,15 +154,22 @@ app.post('/orders/:id/scan', (req, res) => {
             [maTO],
             (err3, rows2) => {
               if (err3) return res.status(500).json(err3);
-              if (!rows2.length)
+              if (!rows || rows2.length === 0)
                 return res.status(404).json({ message: "TO không tồn tại" });
 
               let list = [];
-              try {
-                list = JSON.parse(rows2[0].danhSachGoiHang || "[]");
-              } catch {
-                list = [];
-              }
+                try {
+                  const raw = rows2[0].danhSachGoiHang;
+
+                  if (!raw || raw.trim() === "") {
+                    list = []; // ✅ fix
+                  } else {
+                    list = JSON.parse(raw);
+                  }
+                } catch (e) {
+                  console.log("JSON ERROR:", e);
+                  list = [];
+                }
 
               // ❗ tránh trùng đơn
               if (list.some(item => item.orderId == id)) {
@@ -227,15 +235,22 @@ app.post('/orders/:id/remove', (req, res) => {
         [maTO],
         (err2, rows2) => {
           if (err2) return res.status(500).json(err2);
-          if (!rows2.length)
+          if (!rows2 || rows2.length === 0)
             return res.status(404).json({ message: "TO không tồn tại" });
 
           let list = [];
           try {
-            list = JSON.parse(rows2[0].danhSachGoiHang || "[]");
-          } catch {
+          const raw = rows2[0].danhSachGoiHang;
+
+          if (!raw || raw.trim() === "") {
             list = [];
+          } else {
+            list = JSON.parse(raw);
           }
+        } catch (e) {
+          console.log("JSON PARSE ERROR:", e);
+          list = [];
+        }
 
           // ❗ check đơn có trong list không
           const exists = list.some(item => item.orderId == id);
@@ -315,41 +330,8 @@ app.put('/orders/:id', (req, res) => {
     }
   );
 });
-app.post("/TO_orders", (req, res) => {
-  const {
-    maTO,
-    danhSachGoiHang,
-    diaDiemGiaoHang,
-    trangThai,
-    packer,
-    totalWeight,
-    ngayTao,
-    completeTime
-  } = req.body;
 
-  db.query(
-    `INSERT INTO TO_orders 
-    (maTO, danhSachGoiHang, diaDiemGiaoHang, trangThai, packer, totalWeight, ngayTao, completeTime)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      maTO,
-      JSON.stringify(danhSachGoiHang), // 🔥 convert list → string
-      diaDiemGiaoHang,
-      trangThai,
-      packer,
-      totalWeight,
-      ngayTao,
-      completeTime
-    ],
-    (err, result) => {
-      if (err) {
-        console.log("DB ERROR:", err);
-        return res.status(500).json(err);
-      }
-      res.json({ success: true});
-    }
-  );
-});
+
 //tao order moi tu form
 app.post("/orders",(req,res)=> {
   const {id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien } = req.body;
@@ -465,14 +447,16 @@ app.post("/TO_orders", (req, res) => {
     ngayTao,
     completeTime
   } = req.body;
-
+  const safeList = Array.isArray(danhSachGoiHang)
+    ? danhSachGoiHang
+    : [];
   db.query(
     `INSERT INTO TO_orders 
     (maTO, danhSachGoiHang, diaDiemGiaoHang, trangThai, packer, totalWeight, ngayTao, completeTime)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       maTO,
-      JSON.stringify(danhSachGoiHang), // 🔥 convert list → string
+      JSON.stringify(safeList), // 🔥 convert list → string
       diaDiemGiaoHang,
       trangThai,
       packer,
@@ -500,6 +484,9 @@ app.put("/TO_orders/:maTO", (req, res) => {
     totalWeight,
     completeTime
   } = req.body;
+  const safeList = Array.isArray(danhSachGoiHang)
+  ? danhSachGoiHang
+  : [];
 
   db.query(
     `UPDATE TO_orders SET 
@@ -510,7 +497,7 @@ app.put("/TO_orders/:maTO", (req, res) => {
       completeTime=?
      WHERE maTO=?`,
     [
-      JSON.stringify(danhSachGoiHang),
+      JSON.stringify(safeList),
       diaDiemGiaoHang,
       trangThai,
       totalWeight,
