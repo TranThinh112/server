@@ -275,7 +275,7 @@ app.post('/orders/remove/:id', (req, res) => {
       if (!rows.length)
         return res.status(404).json({ message: "Không tìm thấy đơn" });
 
-      const { maTO, soKi } = rows[0];
+      const { maTO,  } = rows[0];
 
       if (!maTO) {
         return res.status(400).json({
@@ -307,43 +307,81 @@ app.post('/orders/remove/:id', (req, res) => {
         }
 
           // ❗ check đơn có trong list không
-          const exists = list.some(item => item.orderId == id);
-          if (!exists) {
+          const index = list.findIndex(item => item.orderId == id);
+          if (index === -1) {
             return res.status(400).json({
               message: "Đơn không nằm trong TO"
             });
           }
+          //kiem tra co phai la don dau tien khong
+          const isFirstOrder = index === 0;
+          const removed = list[index];
+          const soKi = removed?.soKi || 0;
           // 3. Xóa khỏi list
-          list = list.filter(item => item.orderId != id);
+          list.splice(index, 1);
+        
+        if(isFirstOrder){
+          if(list.length === 0){
+            // nếu xóa đơn đầu tiên và không còn đơn nào → reset diaDiemGiaoHang
+            updateTO(null);
+          } else {
+            // nếu xóa đơn đầu tiên nhưng còn đơn khác → cập nhật diaDiemGiaoHang theo đơn mới đầu tiên
+            const newFirstOrderId = list[0].orderId;
 
-          // 4. Update TO (trừ weight + update list)
-          db.query(
-            `UPDATE TO_orders 
-             SET danhSachGoiHang = ?, 
-                 totalWeight = totalWeight - ?
-             WHERE maTO = ?`,
-            [JSON.stringify(list), soKi, maTO],
-            (err3) => {
-              if (err3) return res.status(500).json(err3);
+            db.query(
+              "SELECT noiNhan FROM orders WHERE id = ?",
+              [newFirstOrderId],
+              (err3, result3) => {
+                if (err3) return res.status(500).json(err3);
+                const newDiaDiem = result3[0]?.noiNhan || null;
+                updateTO(newDiaDiem);
+              }
+            );
+           }
+          }else {
+           // nếu không xóa đơn đầu tiên → giữ nguyên diaDiemGiaoHang
+           updateTO(undefined);
+          }
+                  // 4. Update TO (trừ weight + update list)
+           function updateTO(newDiaDiem) {
+            let sql = `
+              UPDATE TO_orders 
+              SET danhSachGoiHang = ?, 
+                  totalWeight = totalWeight - ?`;
 
-              // 5. Update order
+            let params = [JSON.stringify(list), removedWeight];
+
+            if (newDiaDiem !== undefined) {
+              sql += ", diaDiemGiaoHang = ?";
+              params.push(newDiaDiem);
+            }
+
+            sql += " WHERE maTO = ?";
+            params.push(maTO);
+
+            db.query(sql, params, (err4) => {
+              if (err4) return res.status(500).json(err4);
+
+              // update order
               db.query(
                 `UPDATE orders 
                  SET trangThai = 'Outbound', maTO = NULL, thoiGianDongBao = NULL
                  WHERE id = ?`,
                 [id],
-                (err4) => {
-                  if (err4) return res.status(500).json(err4);
+                (err5) => {
+                  if (err5) return res.status(500).json(err5);
 
                   res.json({
                     success: true,
-                    removedWeight: soKi
+                    removedWeight: removedWeight,
+                    list: list
                   });
                 }
               );
             }
           );
         }
+      }
       );
     }
   );
