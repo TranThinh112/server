@@ -119,6 +119,7 @@ router.post('/scan/:id', (req, res) => {
                   `UPDATE TO_orders 
                    SET danhSachGoiHang = ?, 
                        totalWeight = totalWeight + ?,
+                       SL = SL + 1,
                        diaDiemGiaoHang = CASE 
                          WHEN ? THEN ?
                          ELSE diaDiemGiaoHang
@@ -234,8 +235,8 @@ router.post('/remove/:id', (req, res) => {
             let sql = `
               UPDATE TO_orders 
               SET danhSachGoiHang = ?, 
-                  totalWeight = totalWeight - ?
-            `;
+                  totalWeight = totalWeight - ?,
+                  SL = SL - 1`;
 
             let params = [JSON.stringify(list), removedWeight];
 
