@@ -4,7 +4,7 @@ const db = require("../../db");
 
 
 ////////////////////////////////// lấy order theo id, lay order theo trạng thái ///////////////////////////////
-router.get('/', (req, res) => {
+router.get('/getIn4', (req, res) => {
   let { id, trangThai, keyword, page = 1, limit = 10 } = req.query;
 
   page = Number(page);
