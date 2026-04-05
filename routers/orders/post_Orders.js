@@ -7,6 +7,16 @@ router.post('/scan/:id', (req, res) => {
   const { id } = req.params;
   const { maTO } = req.body;
 
+   // ✅ CHECK FORMAT ID
+  const validIdPattern = /^SPXVN\d{11}$/;
+
+  if (!validIdPattern.test(id)) {
+    return res.status(400).json({
+      message: "Mã đơn không hợp lệ (phải dạng SPXVN + 11 số)"
+    });
+  }
+
+
   if (!maTO) {
     return res.status(400).json({ message: "Thiếu maTO" });
   }
@@ -160,10 +170,21 @@ router.post('/remove/:id', (req, res) => {
     [id],
     (err, rows) => {
       if (err) return res.status(500).json(err);
+
+       // ✅ CHECK FORMAT ID
+      const validIdPattern = /^SPXVN\d{11}$/;
+
+      if (!validIdPattern.test(id)) {
+        return res.status(400).json({
+          message: "Mã đơn không hợp lệ (phải dạng SPXVN + 11 số)"
+        });
+      }
+//check ton tai
       if (!rows.length)
         return res.status(404).json({ message: "Không tìm thấy đơn" });
 
       const { maTO } = rows[0];
+      
 
       if (!maTO) {
         return res.status(400).json({
