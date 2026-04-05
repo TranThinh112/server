@@ -6,7 +6,7 @@ const router = express.Router();
 router.post('/scan/:id', (req, res) => {
   const { id } = req.params;
   const { maTO } = req.body;
-  
+
 console.log("SCAN ID:", id);
    // ✅ CHECK FORMAT ID
   const validIdPattern = /^SPXVN\d{11}$/;
@@ -148,6 +148,7 @@ console.log("SCAN ID:", id);
 
                     res.json({
                       success: true,
+                      instance: INSTANCE_ID, 
                       addedWeight: soKi,
                       list: list
                     });

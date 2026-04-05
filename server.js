@@ -10,6 +10,10 @@ app.get("/", (req, res) => {
   res.send("API is running 🚀");
 });
 
+const INSTANCE_ID = Math.random().toString(36).substring(2, 8);
+
+console.log("INSTANCE:", INSTANCE_ID);
+
 
 const ordersRouter = require("./routers/orders/index_Orders");
 app.use('/orders', ordersRouter);
