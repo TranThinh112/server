@@ -1,6 +1,7 @@
 const db = require("../../db");
 const express = require('express');
 const router = express.Router();
+const INSTANCE_ID = Math.random().toString(36).substring(2, 8);
 
 //update trang thai = 'Inbound' + maTO = maTO + thoiGianDongBao = now
 router.post('/scan/:id', (req, res) => {
@@ -69,7 +70,7 @@ console.log("SCAN ID:", id);
           // ❗ tránh trùng
           if (list.some(item => item.orderId == id)) {
             return res.json({
-              success: true,
+              success: false,
               message: "Đơn đã có trong TO"
             });
           }
@@ -148,7 +149,7 @@ console.log("SCAN ID:", id);
 
                     res.json({
                       success: true,
-                      instance: INSTANCE_ID, 
+                      instance: INSTANCE_ID,
                       addedWeight: soKi,
                       list: list
                     });
