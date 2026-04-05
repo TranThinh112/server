@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const db = require("../../../db");
+const db = require("../../db");
 
 
 //////////////////////////////////////////////////////////////////////////////////// TO_orders ///////////////////////////////////////////////////////////////////////
 //gửi dữ liệu lên server để tạo TO mới
-router.post("/TO_orders", (req, res) => {
+router.post("/", (req, res) => {
   const {
     maTO,
     danhSachGoiHang,
@@ -44,7 +44,7 @@ router.post("/TO_orders", (req, res) => {
 });
 
 //api upload TO mới
-router.put("/TO_orders/:maTO", (req, res) => {
+router.put("/:maTO", (req, res) => {
   const maTO = req.params.maTO;
   const {
     danhSachGoiHang,

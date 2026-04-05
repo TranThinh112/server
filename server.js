@@ -18,7 +18,7 @@ const TO_ordersRouter = require("../routers/TO_orders/index_TO");
 app.use('/TO', TO_ordersRouter);
 
 const usersRouter = require("./routers/users/index_Users");
-app.use('/users', usersRouter);
+app.use('/', usersRouter);
 //// tets sql 
 // ❌ API login dễ dính SQLi
 // app.get("/test", (req, res) => {
