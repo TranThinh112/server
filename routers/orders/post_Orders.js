@@ -14,7 +14,7 @@ console.log("SCAN ID:", id);
 
   if (!validIdPattern.test(id)) {
     return res.status(400).json({
-      message: "Mã đơn không hợp lệ (phải dạng SPXVN + 11 số)"
+      message: "Sai định dạng"
     });
   }
 
@@ -91,7 +91,7 @@ console.log("SCAN ID:", id);
 
                 if (firstNoiNhan !== noiNhan) {
                   return res.status(400).json({
-                    message: "Khác nơi nhận với đơn đầu tiên"
+                    message: "Khác nơi nhận"
                   });
                 }
 
@@ -179,7 +179,7 @@ router.post('/remove/:id', (req, res) => {
 
       if (!validIdPattern.test(id)) {
         return res.status(400).json({
-          message: "Mã đơn không hợp lệ (phải dạng SPXVN + 11 số)"
+          message: "Sai định dạng"
         });
       }
 //check ton tai
@@ -312,16 +312,30 @@ router.post('/remove/:id', (req, res) => {
 router.post("/",(req,res)=> {
   const {id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien } = req.body;
 
+const thoGianTao = new Date();
   db.query(
     'INSERT INTO orders(id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien) VALUES(?,?,?,?,?,?,?,?,?,?)',
 
-    [id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien],
+    [id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien, thoiGianTao],
     (err, result) =>{
      if (err){
       console.log("DB error:", err);
       return res.status(500).json({ error: err.message});
      }
-      return res.json({ success: true });
+     //tra về toàn bọ data sau khi tạo
+      return res.json({
+        id,
+        nguoiGui,
+        nguoiNhan,
+        diaChiGui,
+        diaChiNhan,
+        noiGui,
+        noiNhan,
+        sanPham,
+        soKi,
+        giaTien,
+        thoiGianTao
+      });
     }
   )
 })
