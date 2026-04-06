@@ -322,6 +322,7 @@ const thoGianTao = new Date();
       console.log("DB error:", err);
       return res.status(500).json({ error: err.message});
      }
+     console.log("DB error:", err);
      //tra về toàn bọ data sau khi tạo
       return res.json({
         id,
