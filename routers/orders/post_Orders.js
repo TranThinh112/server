@@ -256,11 +256,21 @@ router.post('/remove/:id', (req, res) => {
 
           // ===== update =====
           function updateTO(newDiaDiem) {
+            // lọc lại list sau khi xóa
+            list = list.filter(item => item.orderId !== id);
+
+            // tính lại
+            const totalWeight = list.reduce(
+              (sum, item) => sum + (item.soKi || 0),
+              0
+            );
+            const SL = list.length;
+
             let sql = `
               UPDATE TO_orders 
               SET danhSachGoiHang = ?, 
-                  totalWeight = totalWeight - ?,
-                  SL = SL - 1`;
+                  totalWeight =  ?,
+                  SL =`;
 
             let params = [JSON.stringify(list), removedWeight];
 
