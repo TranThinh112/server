@@ -270,9 +270,9 @@ router.post('/remove/:id', (req, res) => {
               UPDATE TO_orders 
               SET danhSachGoiHang = ?, 
                   totalWeight =  ?,
-                  SL =`;
+                  SL = ?`;
 
-            let params = [JSON.stringify(list), removedWeight];
+            let params = [JSON.stringify(list), totalWeight, SL];
 
             if (newDiaDiem !== undefined) {
               sql += ", diaDiemGiaoHang = ?";
