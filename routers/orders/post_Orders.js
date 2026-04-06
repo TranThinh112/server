@@ -309,7 +309,7 @@ router.post('/remove/:id', (req, res) => {
 });
 
 //tao order moi tu form
-router.post("/orders",(req,res)=> {
+router.post("/",(req,res)=> {
   const {id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien } = req.body;
 
   db.query(
