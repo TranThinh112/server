@@ -312,9 +312,9 @@ router.post('/remove/:id', (req, res) => {
 router.post("/",(req,res)=> {
   const {id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien } = req.body;
 
-const thoGianTao = new Date();
+const thoiGianTao = new Date();
   db.query(
-    'INSERT INTO orders(id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien) VALUES(?,?,?,?,?,?,?,?,?,?)',
+    'INSERT INTO orders(id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien, thoiGianTao) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
 
     [id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien, thoiGianTao],
     (err, result) =>{
