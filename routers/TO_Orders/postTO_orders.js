@@ -4,7 +4,7 @@ const db = require("../../db");
 
 
 //////////////////////////////////////////////////////////////////////////////////// TO_orders ///////////////////////////////////////////////////////////////////////
-//gửi dữ liệu lên server để tạo TO mới
+//gửi dữ liệu TO moi khi vua tao len server 
 router.post("/", (req, res) => {
   const {
     maTO,
@@ -43,7 +43,7 @@ router.post("/", (req, res) => {
   );
 });
 
-//api upload TO mới
+//api upload TO sau khi bam compete
 router.put("/:maTO", (req, res) => {
   const maTO = req.params.maTO;
   const {
@@ -81,4 +81,20 @@ router.put("/:maTO", (req, res) => {
   );
 });
 
+//cap nhat trang tahi khi reopen TO
+router.put("/:maTO/reopen", (req, res) => {
+  const maTO = req.params.maTO;
+
+  db.query(
+    `UPDATE TO_orders 
+     SET trangThai = 'Packing',
+         completeTime = NULL
+     WHERE maTO = ?`,
+    [maTO],
+    (err) => {
+      if (err) return res.status(500).json(err);
+      res.json({ success: true });
+    }
+  );
+});
 module.exports = router;

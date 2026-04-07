@@ -18,7 +18,7 @@ console.log("SCAN ID:", id);
     });
   }
 
-
+//
   if (!maTO) {
     return res.status(400).json({ message: "Thiếu maTO" });
   }
