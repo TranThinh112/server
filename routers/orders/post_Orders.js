@@ -16,15 +16,12 @@ router.post('/scan/:id', (req, res) => {
     return res.status(400).json({ message: "Sai định dạng" });
   }
 
-  if (!maTO) {
-    return res.status(400).json({ message: "Thiếu maTO" });
-  }
 //dong bo ve gio ho chi minh
   const now = new Date().toLocaleString("sv-SE", {
   timeZone: "Asia/Ho_Chi_Minh"
 });
 
-  // 🔥 1. UPDATE TRƯỚC (giảm 1 query)
+  //  UPDATE TRƯỚC (giảm 1 query)
   db.query(
     `UPDATE orders 
      SET trangThai = 'Inbound', maTO = ?, thoiGianDongBao = ?
@@ -39,7 +36,7 @@ router.post('/scan/:id', (req, res) => {
         });
       }
 
-      // 🔥 2. LẤY order (nhẹ hơn vì đã chắc chắn tồn tại)
+      //  2. LẤY order (nhẹ hơn vì đã chắc chắn tồn tại)
       db.query(
         "SELECT soKi, noiNhan FROM orders WHERE id = ?",
         [id],
@@ -49,7 +46,7 @@ router.post('/scan/:id', (req, res) => {
           const soKi = Number(rows[0].soKi) || 0;
           const noiNhan = rows[0].noiNhan?.trim().toLowerCase();
 
-          // 🔥 3. LẤY TO (bỏ TRIM → dùng index)
+          //  3. LẤY TO (bỏ TRIM → dùng index)
           db.query(
             "SELECT danhSachGoiHang FROM TO_orders WHERE maTO = ?",
             [maTO],
@@ -72,7 +69,7 @@ router.post('/scan/:id', (req, res) => {
                 }
               }
 
-              // 🔥 CHECK TRÙNG nhanh hơn
+              //  CHECK TRÙNG nhanh hơn
               const set = new Set(list.map(i => i.orderId));
               if (set.has(id)) {
                 return res.json({
@@ -83,7 +80,7 @@ router.post('/scan/:id', (req, res) => {
 
               const isFirstOrder = list.length === 0;
 
-              // 🔥 KHÔNG QUERY LẠI DB nếu có thể
+              //  KHÔNG QUERY LẠI DB nếu có thể
               if (!isFirstOrder) {
                 const firstNoiNhan = list[0]?.noiNhan?.toLowerCase?.();
 
@@ -102,7 +99,7 @@ router.post('/scan/:id', (req, res) => {
                 thoiGianScan: now
               });
 
-              // 🔥 UPDATE TO
+              //  UPDATE TO
               db.query(
                 `UPDATE TO_orders 
                  SET danhSachGoiHang = ?, 
@@ -127,7 +124,7 @@ router.post('/scan/:id', (req, res) => {
                     success: true,
                     instance: INSTANCE_ID,
                     addedWeight: soKi
-                    // 🔥 bỏ list → nhẹ hơn
+                    //  bỏ list → nhẹ hơn
                   });
                 }
               );
@@ -143,54 +140,42 @@ router.post('/scan/:id', (req, res) => {
 router.post('/remove/:id', (req, res) => {
   const { id } = req.params;
 
+  //  GỘP: lấy maTO + đảm bảo đúng trạng thái
   db.query(
-    "SELECT maTO FROM orders WHERE id = ?",
+    "SELECT maTO FROM orders WHERE id = ? AND maTO IS NOT NULL",
     [id],
     (err, rows) => {
       if (err) return res.status(500).json(err);
-
-       //  CHECK FORMAT ID
-      const validIdPattern = /^SPXVN\d{11}$/;
-
-      if (!validIdPattern.test(id)) {
-        return res.status(400).json({
-          message: "Sai định dạng"
-        });
-      }
-//check ton tai
       if (!rows.length)
-        return res.status(404).json({ message: "Không tìm thấy đơn" });
+        return res.status(400).json({ message: "Đơn không thuộc TO" });
 
-      const { maTO } = rows[0];
-      
+      const maTO = rows[0].maTO;
 
-      if (!maTO) {
-        return res.status(400).json({
-          message: "Đơn chưa thuộc TO"
-        });
-      }
-
+      // 2. LẤY TO (bỏ TRIM → dùng index)
       db.query(
         "SELECT danhSachGoiHang FROM TO_orders WHERE maTO = ?",
         [maTO],
         (err2, rows2) => {
           if (err2) return res.status(500).json(err2);
-         
+          if (!rows2.length)
+            return res.status(404).json({ message: "TO không tồn tại" });
+
           let list = [];
+          let raw = rows2[0].danhSachGoiHang;
 
-          try {
-            let raw = rows2[0].danhSachGoiHang;
-
-            if (Buffer.isBuffer(raw)) raw = raw.toString();
-
-            list = raw ? JSON.parse(raw) : [];
-            if (!Array.isArray(list)) list = [];
-          } catch (e) {
-            console.log("JSON ERROR:", e);
-            list = [];
+          // parse nhanh + an toàn
+          if (raw && raw.length > 5) {
+            try {
+              if (Buffer.isBuffer(raw)) raw = raw.toString();
+              list = JSON.parse(raw);
+              if (!Array.isArray(list)) list = [];
+            } catch {
+              list = [];
+            }
           }
 
-          const index = list.findIndex(item => item.orderId == id);
+          //  tìm index (giữ nguyên O(n) vì cần index)
+          const index = list.findIndex(item => item.orderId === id);
 
           if (index === -1) {
             return res.status(400).json({
@@ -202,47 +187,23 @@ router.post('/remove/:id', (req, res) => {
           const removed = list[index];
           const removedWeight = removed?.soKi || 0;
 
-          // xoá
+          //  xoá trực tiếp (không filter lại lần 2)
           list.splice(index, 1);
 
-          // ===== xử lý =====
-          if (isFirstOrder) {
-            if (list.length === 0) {
-              return updateTO(null);
-            } else {
-              const newFirstOrderId = list[0].orderId;
-
-              return db.query(
-                "SELECT noiNhan FROM orders WHERE id = ?",
-                [newFirstOrderId],
-                (err3, result3) => {
-                  if (err3) return res.status(500).json(err3);
-
-                  const newDiaDiem = result3[0]?.noiNhan || null;
-                  updateTO(newDiaDiem);
-                }
-              );
-            }
-          } else {
-            return updateTO(undefined);
-          }
-
-          // ===== update =====
+          // ===== UPDATE =====
           function updateTO(newDiaDiem) {
-            // lọc lại list sau khi xóa
-            list = list.filter(item => item.orderId !== id);
+            //  tính nhanh hơn (tránh reduce nặng nếu list lớn)
+            let totalWeight = 0;
+            for (let i = 0; i < list.length; i++) {
+              totalWeight += list[i].soKi || 0;
+            }
 
-            // tính lại
-            const totalWeight = list.reduce(
-              (sum, item) => sum + (item.soKi || 0),
-              0
-            );
             const SL = list.length;
 
             let sql = `
               UPDATE TO_orders 
               SET danhSachGoiHang = ?, 
-                  totalWeight =  ?,
+                  totalWeight = ?,
                   SL = ?`;
 
             let params = [JSON.stringify(list), totalWeight, SL];
@@ -258,6 +219,7 @@ router.post('/remove/:id', (req, res) => {
             db.query(sql, params, (err4) => {
               if (err4) return res.status(500).json(err4);
 
+              //  update order (nhanh, không check lại)
               db.query(
                 `UPDATE orders 
                  SET trangThai = 'Outbound', maTO = NULL, thoiGianDongBao = NULL
@@ -268,19 +230,47 @@ router.post('/remove/:id', (req, res) => {
 
                   res.json({
                     success: true,
-                    removedWeight,
-                    list
+                    removedWeight
+                    //  bỏ list → giảm response
                   });
                 }
               );
             });
+          }
+
+          //  xử lý first order (KHÔNG QUERY nếu có sẵn)
+          if (isFirstOrder) {
+            if (list.length === 0) {
+              return updateTO(null);
+            } else {
+              //  dùng luôn noiNhan nếu có
+              const newDiaDiem = list[0]?.noiNhan;
+
+              if (newDiaDiem) {
+                return updateTO(newDiaDiem);
+              }
+
+              // fallback mới query
+              const newFirstOrderId = list[0].orderId;
+
+              return db.query(
+                "SELECT noiNhan FROM orders WHERE id = ?",
+                [newFirstOrderId],
+                (err3, result3) => {
+                  if (err3) return res.status(500).json(err3);
+
+                  updateTO(result3[0]?.noiNhan || null);
+                }
+              );
+            }
+          } else {
+            return updateTO(undefined);
           }
         }
       );
     }
   );
 });
-
 //tao order moi tu form
 router.post("/",(req,res)=> {
   const {id, nguoiGui, nguoiNhan, diaChiGui, diaChiNhan, noiGui, noiNhan, sanPham, soKi, giaTien } = req.body;
