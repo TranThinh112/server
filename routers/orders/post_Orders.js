@@ -19,8 +19,10 @@ router.post('/scan/:id', (req, res) => {
   if (!maTO) {
     return res.status(400).json({ message: "Thiếu maTO" });
   }
-
-  const now = new Date();
+//dong bo ve gio ho chi minh
+  const now = new Date().toLocaleString("sv-SE", {
+  timeZone: "Asia/Ho_Chi_Minh"
+});
 
   // 🔥 1. UPDATE TRƯỚC (giảm 1 query)
   db.query(
