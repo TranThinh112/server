@@ -74,7 +74,7 @@ router.post('/scan/:id', (req, res) => {
               if (set.has(id)) {
                 return res.json({
                   success: false,
-                  message: "Đơn đã có trong TO"
+                  message: "Đơn đã Scan"
                 });
               }
 

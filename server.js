@@ -48,7 +48,11 @@ app.use((req, res, next) => {
 });
 
 ////////////////////////////////////////////////////////// PORT Railway //////////////////////////////////////////////////////////////
-
-app.listen(process.env.PORT || 8080, () => {
+// cahy server local
+app.listen(process.env.PORT || 3000, () => {
   console.log("Server running");
 });
+//chay server onl
+// app.listen(process.env.PORT || 8080, () => {
+//   console.log("Server running");
+// });
